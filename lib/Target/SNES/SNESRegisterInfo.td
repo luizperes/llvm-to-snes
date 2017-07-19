@@ -13,12 +13,12 @@
 
 class SNES8Reg<bits<8> Enc, string n> : Register<n> {
   let HWEncoding = Enc;
-  let Namespace = "WLADX";
+  let Namespace = "SNES";
 }
 
 class SNES16Reg<bits<16> Enc, string n> : Register<n> {
   let HWEncoding = Enc;
-  let Namespace = "WLADX";
+  let Namespace = "SNES";
 }
 
 
