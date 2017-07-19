@@ -1,4 +1,4 @@
-//===-- WLADXRegisterInfo.td - WLADX Register defs ---------*- tablegen -*-===//
+//===-- SNESRegisterInfo.td - SNES Register defs ---------*- tablegen -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -8,10 +8,15 @@
 //===----------------------------------------------------------------------===//
 
 //===----------------------------------------------------------------------===//
-//  Declarations that describe the WLADX register file
+//  Declarations that describe the SNES register file
 //===----------------------------------------------------------------------===//
 
-class WLADXReg<bits<16> Enc, string n> : Register<n> {
+class SNES8Reg<bits<8> Enc, string n> : Register<n> {
+  let HWEncoding = Enc;
+  let Namespace = "WLADX";
+}
+
+class SNES16Reg<bits<16> Enc, string n> : Register<n> {
   let HWEncoding = Enc;
   let Namespace = "WLADX";
 }
