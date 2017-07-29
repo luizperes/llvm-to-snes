@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This describes the calling conventions for the Sparc architectures.
+// This describes the calling conventions for the SNES architecture.
 //
 //===----------------------------------------------------------------------===//
 
@@ -16,7 +16,7 @@
 //===----------------------------------------------------------------------===//
 
 def CCSNESRet : CallingConv<[
-  //DoesNothing
+  // DoesNothing
 ]>;
 
 def CCSNES : CallingConv<[
