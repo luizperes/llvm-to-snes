@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-class InstSNES<dag outs, dag ins, string asmstr, list<dag> pattern,
+class SNESInst<dag outs, dag ins, string asmstr, list<dag> pattern,
              InstrItinClass itin = NoItinerary>
    : Instruction {
 
@@ -17,22 +17,22 @@ class InstSNES<dag outs, dag ins, string asmstr, list<dag> pattern,
   let AsmString   = asmstr;
   let Pattern = pattern;
 
-  let DecoderNamespace = "SuperNintendo";
+  let DecoderNamespace = "Super Nintendo";
   let Itinerary = itin;
 }
 
-class InstSNES8<dag outs, dag ins, string asmstr, list<dag> pattern,
+class SNESInst8<dag outs, dag ins, string asmstr, list<dag> pattern,
              InstrItinClass itin = NoItinerary>
-   : InstSNES<outs, ins, asmstr, pattern> {
+   : SNESInst<outs, ins, asmstr, pattern> {
   field bits<8> Inst;
 
   let bits<8> op;
   let Inst{7-0} = op;  
 }
 
-class InstSNES16<dag outs, dag ins, string asmstr, list<dag> pattern,
+class SNESInst16<dag outs, dag ins, string asmstr, list<dag> pattern,
              InstrItinClass itin = NoItinerary>
-   : InstSNES<outs, ins, asmstr, pattern> {
+   : SNESInst<outs, ins, asmstr, pattern> {
   field bits<16> Inst;
 
   let bits<8> op;
@@ -42,9 +42,9 @@ class InstSNES16<dag outs, dag ins, string asmstr, list<dag> pattern,
   let Inst{7-0} = value;
 }
 
-class InstSNES24<dag outs, dag ins, string asmstr, list<dag> pattern,
+class SNESInst24<dag outs, dag ins, string asmstr, list<dag> pattern,
              InstrItinClass itin = NoItinerary>
-   : InstSNES<outs, ins, asmstr, pattern> {
+   : SNESInst<outs, ins, asmstr, pattern> {
   field bits<24> Inst;
 
   let bits<8> op;
@@ -54,9 +54,9 @@ class InstSNES24<dag outs, dag ins, string asmstr, list<dag> pattern,
   let Inst{15-0} = value;
 }
 
-class InstSNES32<dag outs, dag ins, string asmstr, list<dag> pattern,
+class SNESInst32<dag outs, dag ins, string asmstr, list<dag> pattern,
              InstrItinClass itin = NoItinerary>
-   : InstSNES<outs, ins, asmstr, pattern> {
+   : SNESInst<outs, ins, asmstr, pattern> {
   field bits<32> Inst;
 
   let bits<8> op;

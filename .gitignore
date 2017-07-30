@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+# Swap files
+*.swp
+
+# Markdown preview stuff
+.markdown*
