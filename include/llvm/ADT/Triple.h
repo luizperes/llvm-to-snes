@@ -17,6 +17,7 @@
 #undef NetBSD
 #undef mips
 #undef sparc
+#undef cpu0
 
 namespace llvm {
 
@@ -53,6 +54,8 @@ public:
     avr,            // AVR: Atmel AVR microcontroller
     bpfel,          // eBPF or extended BPF or 64-bit BPF (little endian)
     bpfeb,          // eBPF or extended BPF or 64-bit BPF (big endian)
+    cpu0,           // For Tutorial Backend Cpu0
+    cpu0e1,
     hexagon,        // Hexagon: hexagon
     mips,           // MIPS: mips, mipsallegrex
     mipsel,         // MIPSEL: mipsel, mipsallegrexel

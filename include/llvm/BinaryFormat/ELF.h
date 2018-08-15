@@ -312,6 +312,7 @@ enum {
   EM_RISCV = 243,         // RISC-V
   EM_LANAI = 244,         // Lanai 32-bit processor
   EM_BPF = 247,           // Linux kernel bpf virtual machine
+  EM_CPU0 = 999,
 
   // A request has been made to the maintainer of the official registry for
   // such numbers for an official value for WebAssembly. As soon as one is
@@ -358,6 +359,14 @@ enum {
   ELFOSABI_C6000_LINUX = 65,  // Linux TMS320C6000
   ELFOSABI_ARM = 97,          // ARM
   ELFOSABI_STANDALONE = 255   // Standalone (embedded) application
+};
+
+// Cpu0 Specific e_flags
+enum {
+  EF_CPU0_NOREORDER = 0x00000001, // Don't reorder instructions
+  EF_CPU0_PIC = 0x00000002, // Position independent code
+  EF_CPU0_ARCH_32 = 0x50000000, // CPU032 instruction set per linux not elf.h
+  EF_CPU0_ARCH = 0xf0000000 // Mask for applying EF_CPU0_ARCH_ variant
 };
 
 #define ELF_RELOC(name, value) name = value,
@@ -619,6 +628,11 @@ enum {
 // ELF Relocation types for BPF
 enum {
 #include "ELFRelocs/BPF.def"
+};
+
+// ELF Relocation types for Mips
+enum {
+#include "ELFRelocs/Cpu0.def"
 };
 
 #undef ELF_RELOC
