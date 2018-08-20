@@ -10,3 +10,7 @@ Obs.: All files for this project can be found inside the folder ./lib/Target/SNE
 The wiki's homepage for general information
 
 * [Superfamicom's wiki](https://wiki.superfamicom.org/)
+
+# How to test it
+
+Run: `cmake -DLLVM_TARGETS_TO_BUILD=X86 . --build . -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=SNES`
