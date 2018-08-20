@@ -36,3 +36,6 @@
 
 # Markdown preview stuff
 .markdown*
+
+# bin folder
+build
