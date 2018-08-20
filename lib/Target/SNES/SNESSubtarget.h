@@ -61,6 +61,6 @@ public:
   void ParseSubtargetFeatures(StringRef CPU, StringRef FS);
 };
 
-} // LLVM_SNES_SUBTARGET_H 
+} // end of llvm namespace
 
-#endif
+#endif // LLVM_SNES_SUBTARGET_H

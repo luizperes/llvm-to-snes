@@ -25,8 +25,8 @@ using namespace llvm;
 #include "SNESGenSubtargetInfo.inc"
 
 SNESSubtarget::SNESSubtarget(const Triple &TT, const std::string &CPU,
-                             const std::string &FS, AVRTargetMachine &TM)
-    : AVRGenSubtargetInfo(TT, CPU, FS), InstrInfo(), FrameLowering(),
+                             const std::string &FS, SNESTargetMachine &TM)
+    : SNESGenSubtargetInfo(TT, CPU, FS), InstrInfo(), FrameLowering(),
       TLInfo(TM), TSInfo() {
   // Parse features string.
   ParseSubtargetFeatures(CPU, FS);

@@ -36,8 +36,6 @@ public:
     return &Subtarget;
   }
 
-  // Pass Pipeline Configuration
-  TargetPassConfig *createPassConfig(PassManagerBase &PM) override;
   TargetLoweringObjectFile *getObjFileLowering() const override {
     return TLOF.get();
   }
@@ -47,6 +45,6 @@ public:
   }
 };
 
-} // LLVM_SNES_TARGET_MACHINE_H 
+} // end of llvm namespace
 
-#endif
+#endif // LLVM_SNES_TARGET_MACHINE_H
