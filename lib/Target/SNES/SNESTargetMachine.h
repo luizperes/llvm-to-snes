@@ -32,7 +32,9 @@ public:
   ~SNESTargetMachine() override;
 
   const SNESSubtarget *getSubtargetImpl() const { return &Subtarget; }
-  const SNESSubtarget *getSubtargetImpl(const Function &) const { return &Subtarget; };
+  const SNESSubtarget *getSubtargetImpl(const Function &) const override {
+    return &Subtarget;
+  }
 
   // Pass Pipeline Configuration
   TargetPassConfig *createPassConfig(PassManagerBase &PM) override;
