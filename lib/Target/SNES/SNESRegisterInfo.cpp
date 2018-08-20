@@ -1,4 +1,4 @@
-//===-- SNESInstrInfo.cpp - SNES Instruction Information ----------------===//
+//===-- SNESRegisterInfo.cpp - SNES Register Information ----------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,27 +7,26 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file contains the SNES implementation of the TargetInstrInfo class.
+// This file contains the SNES implementation of the TargetRegisterInfo class.
 //
 //===----------------------------------------------------------------------===//
 
-#include "SNESInstrInfo.h"
+#include "SNESRegisterInfo.h"
 #include "SNES.h"
 #include "SNESSubtarget.h"
+#include "llvm/ADT/BitVector.h"
 #include "llvm/ADT/STLExtras.h"
-#include "llvm/ADT/SmallVector.h"
 #include "llvm/CodeGen/MachineFrameInfo.h"
+#include "llvm/CodeGen/MachineFunction.h"
 #include "llvm/CodeGen/MachineInstrBuilder.h"
-#include "llvm/CodeGen/MachineMemOperand.h"
-#include "llvm/CodeGen/MachineRegisterInfo.h"
+#include "llvm/IR/Type.h"
+#include "llvm/Support/CommandLine.h"
 #include "llvm/Support/ErrorHandling.h"
-#include "llvm/Support/TargetRegistry.h"
+#include "llvm/Target/TargetInstrInfo.h"
 
 using namespace llvm;
 
-#define GET_INSTRINFO_CTOR_DTOR
-#include "SNESGenInstrInfo.inc"
+#define GET_REGINFO_TARGET_DESC
+#include "SNESGenRegisterInfo.inc"
 
-SNESInstrInfo::SNESInstrInfo(SNESSubtarget &ST)
-    : SNESGenInstrInfo(), RI(),
-      Subtarget(ST) {}
+SNESRegisterInfo::SNESRegisterInfo() {}
