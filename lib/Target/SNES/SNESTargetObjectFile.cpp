@@ -8,7 +8,6 @@
 //===----------------------------------------------------------------------===//
 
 #include "SNESTargetObjectFile.h"
-// #include "MCTargetDesc/SNESMCExpr.h"
 #include "llvm/BinaryFormat/Dwarf.h"
 #include "llvm/CodeGen/MachineModuleInfoImpls.h"
 #include "llvm/Target/TargetLowering.h"
