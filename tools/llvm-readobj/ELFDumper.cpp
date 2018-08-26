@@ -894,6 +894,7 @@ static const EnumEntry<unsigned> ElfMachineType[] = {
   ENUM_ENT(EM_HUANY,         "Harvard Universitys's machine-independent object format"),
   ENUM_ENT(EM_PRISM,         "Vitesse Prism"),
   ENUM_ENT(EM_AVR,           "Atmel AVR 8-bit microcontroller"),
+  ENUM_ENT(EM_SNES,           "Super Nintendo Entertainment System 65c816"),
   ENUM_ENT(EM_FR30,          "Fujitsu FR30"),
   ENUM_ENT(EM_D10V,          "Mitsubishi D10V"),
   ENUM_ENT(EM_D30V,          "Mitsubishi D30V"),

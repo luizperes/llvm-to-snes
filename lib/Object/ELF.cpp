@@ -64,6 +64,12 @@ StringRef llvm::object::getELFRelocationTypeName(uint32_t Machine,
     default:
       break;
     }
+  case ELF::EM_SNES:
+    switch (Type) {
+#include "llvm/BinaryFormat/ELFRelocs/SNES.def"
+    default:
+      break;
+    }
     break;
   case ELF::EM_HEXAGON:
     switch (Type) {

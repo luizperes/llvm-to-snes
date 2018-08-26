@@ -20,6 +20,9 @@
 #include "SNESGenRegisterInfo.inc"
 
 namespace llvm {
+
+class SNESSubtarget;
+
 struct SNESRegisterInfo : public SNESGenRegisterInfo {
   SNESRegisterInfo();
 };

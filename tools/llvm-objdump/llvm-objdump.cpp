@@ -752,6 +752,7 @@ static std::error_code getRelocationValueString(const ELFObjectFile<ELFT> *Obj,
     break;
   case ELF::EM_LANAI:
   case ELF::EM_AVR:
+  case ELF::EM_SNES:
   case ELF::EM_AARCH64: {
     std::string fmtbuf;
     raw_string_ostream fmt(fmtbuf);

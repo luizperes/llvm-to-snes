@@ -950,6 +950,8 @@ StringRef ELFObjectFile<ELFT>::getFileFormatName() const {
       return (IsLittleEndian ? "ELF32-arm-little" : "ELF32-arm-big");
     case ELF::EM_AVR:
       return "ELF32-avr";
+    case ELF::EM_SNES:
+      return "ELF16-snes-65c816";
     case ELF::EM_HEXAGON:
       return "ELF32-hexagon";
     case ELF::EM_LANAI:
@@ -1020,6 +1022,8 @@ unsigned ELFObjectFile<ELFT>::getArch() const {
     return Triple::arm;
   case ELF::EM_AVR:
     return Triple::avr;
+  case ELF::EM_SNES:
+    return Triple::snes;
   case ELF::EM_HEXAGON:
     return Triple::hexagon;
   case ELF::EM_LANAI:

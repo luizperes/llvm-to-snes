@@ -109,6 +109,7 @@ void ScalarEnumerationTraits<ELFYAML::ELF_EM>::enumeration(
   ECase(EM_HUANY);
   ECase(EM_PRISM);
   ECase(EM_AVR);
+  ECase(EM_SNES);
   ECase(EM_FR30);
   ECase(EM_D10V);
   ECase(EM_D30V);
@@ -346,6 +347,7 @@ void ScalarBitSetTraits<ELFYAML::ELF_EF>::bitset(IO &IO,
     break;
   case ELF::EM_AMDGPU:
   case ELF::EM_X86_64:
+  case ELF::EM_SNES:
     break;
   default:
     llvm_unreachable("Unsupported architecture");
