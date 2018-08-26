@@ -16,3 +16,4 @@ add_llvm_target(SNESCodeGen
 )
 
 add_dependencies(LLVMSNESCodeGen SNESCommonTableGen intrinsics_gen)
+add_subdirectory(TargetInfo)

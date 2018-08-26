@@ -1,4 +1,4 @@
-;===- ./lib/Target/SNES/LLVMBuild.txt -------------------------*- Conf -*--===;
+;===- ./lib/Target/SNES/TargetInfo/LLVMBuild.txt ----------------*- Conf -*--===;
 ;
 ;                     The LLVM Compiler Infrastructure
 ;
@@ -15,22 +15,9 @@
 ;
 ;===------------------------------------------------------------------------===;
 
-[common]
-subdirectories = TargetInfo
-
 [component_0]
-type = TargetGroup
-name = SNES 
-parent = Target
-has_asmparser = 0
-has_asmprinter = 0
-has_disassembler = 0
-has_jit = 0
-
-[component_1]
 type = Library
-name = SNESCodeGen
+name = SNESInfo
 parent = SNES
-required_libraries = AsmPrinter CodeGen Core MC SelectionDAG Support Target
-                     SNESInfo
+required_libraries = MC Support
 add_to_library_groups = SNES
