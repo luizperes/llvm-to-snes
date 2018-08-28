@@ -1,4 +1,4 @@
-//===------- SNESTargetObjectFile.cpp - SNES Object Info Impl -----------===//
+//===-- SNESTargetObjectFile.cpp - SNES Object Files ------------------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -8,22 +8,34 @@
 //===----------------------------------------------------------------------===//
 
 #include "SNESTargetObjectFile.h"
-#include "llvm/BinaryFormat/Dwarf.h"
-#include "llvm/CodeGen/MachineModuleInfoImpls.h"
-#include "llvm/Target/TargetLowering.h"
 
-using namespace llvm;
+#include "llvm/BinaryFormat/ELF.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/GlobalValue.h"
+#include "llvm/IR/Mangler.h"
+#include "llvm/MC/MCContext.h"
+#include "llvm/MC/MCSectionELF.h"
 
-void SNESELFTargetObjectFile::Initialize(MCContext &Ctx,
-                                         const TargetMachine &TM) {
-  TargetLoweringObjectFileELF::Initialize(Ctx, TM);
-  InitializeELF(TM.Options.UseInitArray);
+#include "SNES.h"
+
+namespace llvm {
+void SNESTargetObjectFile::Initialize(MCContext &Ctx, const TargetMachine &TM) {
+  Base::Initialize(Ctx, TM);
+  ProgmemDataSection =
+      Ctx.getELFSection(".progmem.data", ELF::SHT_PROGBITS, ELF::SHF_ALLOC);
 }
 
-const MCExpr *SNESELFTargetObjectFile::getTTypeGlobalReference(
-    const GlobalValue *GV, unsigned Encoding, const TargetMachine &TM,
-    MachineModuleInfo *MMI, MCStreamer &Streamer) const {
+MCSection *
+SNESTargetObjectFile::SelectSectionForGlobal(const GlobalObject *GO,
+                                            SectionKind Kind,
+                                            const TargetMachine &TM) const {
+  // Global values in flash memory are placed in the progmem.data section
+  // unless they already have a user assigned section.
+  if (SNES::isProgramMemoryAddress(GO) && !GO->hasSection())
+    return ProgmemDataSection;
 
-  return TargetLoweringObjectFileELF::getTTypeGlobalReference(GV, Encoding, TM,
-                                                              MMI, Streamer);
+  // Otherwise, we work the same way as ELF.
+  return Base::SelectSectionForGlobal(GO, Kind, TM);
 }
+} // end of namespace llvm
+

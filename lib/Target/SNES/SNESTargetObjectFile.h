@@ -1,4 +1,4 @@
-//===-- SNESTargetObjectFile.h - SNES Object Info -------------*- C++ -*-===//
+//===-- SNESTargetObjectFile.h - SNES Object Info -----------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,29 +7,27 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_SNES_TARGETOBJECTFILE_H
-#define LLVM_SNES_TARGETOBJECTFILE_H
+#ifndef LLVM_SNES_TARGET_OBJECT_FILE_H
+#define LLVM_SNES_TARGET_OBJECT_FILE_H
 
 #include "llvm/CodeGen/TargetLoweringObjectFileImpl.h"
 
 namespace llvm {
 
-class MCContext;
-class TargetMachine;
+/// Lowering for an SNES ELF32 object file.
+class SNESTargetObjectFile : public TargetLoweringObjectFileELF {
+  typedef TargetLoweringObjectFileELF Base;
 
-class SNESELFTargetObjectFile : public TargetLoweringObjectFileELF {
 public:
-  SNESELFTargetObjectFile() : TargetLoweringObjectFileELF() {}
+  void Initialize(MCContext &ctx, const TargetMachine &TM) override;
 
-  void Initialize(MCContext &Ctx, const TargetMachine &TM) override;
+  MCSection *SelectSectionForGlobal(const GlobalObject *GO, SectionKind Kind,
+                                    const TargetMachine &TM) const override;
 
-  const MCExpr *getTTypeGlobalReference(const GlobalValue *GV,
-                                        unsigned Encoding,
-                                        const TargetMachine &TM,
-                                        MachineModuleInfo *MMI,
-                                        MCStreamer &Streamer) const override;
+private:
+  MCSection *ProgmemDataSection;
 };
 
 } // end namespace llvm
 
-#endif // LLVM_SNES_TARGETOBJECTFILE_H
+#endif // LLVM_SNES_TARGET_OBJECT_FILE_H

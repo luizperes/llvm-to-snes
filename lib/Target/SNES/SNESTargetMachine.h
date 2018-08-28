@@ -1,4 +1,4 @@
-//===-- SNESTargetMachine.h - Define TargetMachine for SNES (65c816) ---*- C++ -*-===//
+//===-- SNESTargetMachine.h - Define TargetMachine for SNES -------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -14,37 +14,42 @@
 #ifndef LLVM_SNES_TARGET_MACHINE_H
 #define LLVM_SNES_TARGET_MACHINE_H
 
-#include "SNESInstrInfo.h"
-#include "SNESSubtarget.h"
+#include "llvm/IR/DataLayout.h"
 #include "llvm/Target/TargetMachine.h"
+
+#include "SNESFrameLowering.h"
+#include "SNESISelLowering.h"
+#include "SNESInstrInfo.h"
+#include "SNESSelectionDAGInfo.h"
+#include "SNESSubtarget.h"
 
 namespace llvm {
 
+/// A generic SNES implementation.
 class SNESTargetMachine : public LLVMTargetMachine {
-private:
-  std::unique_ptr<TargetLoweringObjectFile> TLOF;
-  SNESSubtarget Subtarget;
 public:
   SNESTargetMachine(const Target &T, const Triple &TT, StringRef CPU,
-                    StringRef FS, const TargetOptions &Options,
-                    Optional<Reloc::Model> RM, CodeModel::Model CM,
-                    CodeGenOpt::Level OL);
-  ~SNESTargetMachine() override;
+                   StringRef FS, const TargetOptions &Options, Optional<Reloc::Model> RM,
+                   CodeModel::Model CM, CodeGenOpt::Level OL);
 
-  const SNESSubtarget *getSubtargetImpl() const { return &Subtarget; }
-  const SNESSubtarget *getSubtargetImpl(const Function &) const override {
-    return &Subtarget;
-  }
+  const SNESSubtarget *getSubtargetImpl() const;
+  const SNESSubtarget *getSubtargetImpl(const Function &) const override;
 
   TargetLoweringObjectFile *getObjFileLowering() const override {
-    return TLOF.get();
+    return this->TLOF.get();
   }
+
+  TargetPassConfig *createPassConfig(PassManagerBase &PM) override;
 
   bool isMachineVerifierClean() const override {
     return false;
   }
+
+private:
+  std::unique_ptr<TargetLoweringObjectFile> TLOF;
+  SNESSubtarget SubTarget;
 };
 
-} // end of llvm namespace
+} // end namespace llvm
 
 #endif // LLVM_SNES_TARGET_MACHINE_H

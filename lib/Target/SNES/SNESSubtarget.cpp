@@ -1,4 +1,4 @@
-//===-- SNESSubtarget.cpp - SNES Subtarget Information  ------------------===//
+//===-- SNESSubtarget.cpp - SNES Subtarget Information ----------------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -12,11 +12,13 @@
 //===----------------------------------------------------------------------===//
 
 #include "SNESSubtarget.h"
-#include "SNES.h"
-#include "llvm/Support/MathExtras.h"
+
+#include "llvm/BinaryFormat/ELF.h"
 #include "llvm/Support/TargetRegistry.h"
 
-using namespace llvm;
+#include "SNES.h"
+#include "SNESTargetMachine.h"
+#include "MCTargetDesc/SNESMCTargetDesc.h"
 
 #define DEBUG_TYPE "snes-subtarget"
 
@@ -24,10 +26,22 @@ using namespace llvm;
 #define GET_SUBTARGETINFO_CTOR
 #include "SNESGenSubtargetInfo.inc"
 
+namespace llvm {
+
 SNESSubtarget::SNESSubtarget(const Triple &TT, const std::string &CPU,
-                             const std::string &FS, SNESTargetMachine &TM)
+                           const std::string &FS, SNESTargetMachine &TM)
     : SNESGenSubtargetInfo(TT, CPU, FS), InstrInfo(), FrameLowering(),
-      TLInfo(TM), TSInfo() {
+      TLInfo(TM), TSInfo(),
+
+      // Subtarget features
+      m_hasSRAM(false), m_hasJMPCALL(false), m_hasIJMPCALL(false),
+      m_hasEIJMPCALL(false), m_hasADDSUBIW(false), m_hasSmallStack(false),
+      m_hasMOVW(false), m_hasLPM(false), m_hasLPMX(false),  m_hasELPM(false),
+      m_hasELPMX(false), m_hasSPM(false), m_hasSPMX(false), m_hasDES(false),
+      m_supportsRMW(false), m_supportsMultiplication(false), m_hasBREAK(false),
+      m_hasTinyEncoding(false), ELFArch(false), m_FeatureSetDummy(false) {
   // Parse features string.
   ParseSubtargetFeatures(CPU, FS);
 }
+
+} // end of namespace llvm

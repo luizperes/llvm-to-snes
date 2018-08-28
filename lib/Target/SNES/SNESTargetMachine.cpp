@@ -1,4 +1,4 @@
-//===-- SNESTargetMachine.cpp - Define TargetMachine for SNES (65c816) -----------===//
+//===-- SNESTargetMachine.cpp - Define TargetMachine for SNES ---------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,110 +7,118 @@
 //
 //===----------------------------------------------------------------------===//
 //
+// This file defines the SNES specific subclass of TargetMachine.
 //
 //===----------------------------------------------------------------------===//
 
 #include "SNESTargetMachine.h"
-#include "SNES.h"
-#include "SNESTargetObjectFile.h"
+
 #include "llvm/CodeGen/Passes.h"
 #include "llvm/CodeGen/TargetPassConfig.h"
 #include "llvm/IR/LegacyPassManager.h"
+#include "llvm/IR/Module.h"
 #include "llvm/Support/TargetRegistry.h"
-using namespace llvm;
 
-static const char *SNESDataLayout = "e-p:16:8:8-i1:8:8-i8:8:8-i16:8:8-n8:16";
+#include "SNES.h"
+#include "SNESTargetObjectFile.h"
+#include "MCTargetDesc/SNESMCTargetDesc.h"
 
-extern "C" void LLVMInitializeSNESTarget() {
-  // Register the target.
-  RegisterTargetMachine<SNESTargetMachine> X(getTheSNESTarget());
-}
+namespace llvm {
 
-static Reloc::Model getEffectiveRelocModel(Optional<Reloc::Model> RM) {
-  if (!RM.hasValue())
-    return Reloc::Static;
-  return *RM;
-}
+static const char *SNESDataLayout = "e-p:16:16:16-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-n8";
 
 /// Processes a CPU name.
 static StringRef getCPU(StringRef CPU) {
   if (CPU.empty() || CPU == "generic") {
-    return "snes";
+    return "snes2";
   }
 
   return CPU;
 }
 
+static Reloc::Model getEffectiveRelocModel(Optional<Reloc::Model> RM) {
+  return RM.hasValue() ? *RM : Reloc::Static;
+}
+
 SNESTargetMachine::SNESTargetMachine(const Target &T, const Triple &TT,
-                                     StringRef CPU, StringRef FS,
-                                     const TargetOptions &Options,
-                                     Optional<Reloc::Model> RM,
-                                     CodeModel::Model CM,
-                                     CodeGenOpt::Level OL)
-    : LLVMTargetMachine(T, SNESDataLayout, TT, getCPU(CPU), FS, Options,
-                        getEffectiveRelocModel(RM), CM, OL),
-      Subtarget(TT, getCpu(CPU), FS, *this) {
-  this->TLOF = make_unique<AVRTargetObjectFile>();
+                                   StringRef CPU, StringRef FS,
+                                   const TargetOptions &Options,
+                                   Optional<Reloc::Model> RM, CodeModel::Model CM,
+                                   CodeGenOpt::Level OL)
+    : LLVMTargetMachine(
+          T, SNESDataLayout, TT,
+          getCPU(CPU), FS, Options, getEffectiveRelocModel(RM), CM, OL),
+      SubTarget(TT, getCPU(CPU), FS, *this) {
+  this->TLOF = make_unique<SNESTargetObjectFile>();
   initAsmInfo();
 }
 
-SNESTargetMachine::~SNESTargetMachine() {}
-
-// TODO: check what is needed from code below
-/*
 namespace {
-/// Spar Code Generator Pass Configuration Options.
-class SparcPassConfig : public TargetPassConfig {
+/// SNES Code Generator Pass Configuration Options.
+class SNESPassConfig : public TargetPassConfig {
 public:
-  SparcPassConfig(SparcTargetMachine &TM, PassManagerBase &PM)
-    : TargetPassConfig(TM, PM) {}
+  SNESPassConfig(SNESTargetMachine &TM, PassManagerBase &PM)
+      : TargetPassConfig(TM, PM) {}
 
-  SparcTargetMachine &getSparcTargetMachine() const {
-    return getTM<SparcTargetMachine>();
+  SNESTargetMachine &getSNESTargetMachine() const {
+    return getTM<SNESTargetMachine>();
   }
 
-  void addIRPasses() override;
   bool addInstSelector() override;
+  void addPreSched2() override;
   void addPreEmitPass() override;
+  void addPreRegAlloc() override;
 };
 } // namespace
 
-TargetPassConfig *SparcTargetMachine::createPassConfig(PassManagerBase &PM) {
-  return new SparcPassConfig(*this, PM);
+TargetPassConfig *SNESTargetMachine::createPassConfig(PassManagerBase &PM) {
+  return new SNESPassConfig(*this, PM);
 }
 
-void SparcPassConfig::addIRPasses() {
-  addPass(createAtomicExpandPass());
+extern "C" void LLVMInitializeSNESTarget() {
+  // Register the target.
+  RegisterTargetMachine<SNESTargetMachine> X(getTheSNESTarget());
 
-  TargetPassConfig::addIRPasses();
+  auto &PR = *PassRegistry::getPassRegistry();
+  initializeSNESExpandPseudoPass(PR);
+  initializeSNESInstrumentFunctionsPass(PR);
+  initializeSNESRelaxMemPass(PR);
 }
 
-bool SparcPassConfig::addInstSelector() {
-  addPass(createSparcISelDag(getSparcTargetMachine()));
+const SNESSubtarget *SNESTargetMachine::getSubtargetImpl() const {
+  return &SubTarget;
+}
+
+const SNESSubtarget *SNESTargetMachine::getSubtargetImpl(const Function &) const {
+  return &SubTarget;
+}
+
+//===----------------------------------------------------------------------===//
+// Pass Pipeline Configuration
+//===----------------------------------------------------------------------===//
+
+bool SNESPassConfig::addInstSelector() {
+  // Install an instruction selector.
+  addPass(createSNESISelDag(getSNESTargetMachine(), getOptLevel()));
+  // Create the frame analyzer pass used by the PEI pass.
+  addPass(createSNESFrameAnalyzerPass());
+
   return false;
 }
 
-void SparcPassConfig::addPreEmitPass(){
-  addPass(createSparcDelaySlotFillerPass());
-
-  if (this->getSparcTargetMachine().getSubtargetImpl()->insertNOPLoad())
-  {
-    addPass(new InsertNOPLoad());
-  }
-  if (this->getSparcTargetMachine().getSubtargetImpl()->fixFSMULD())
-  {
-    addPass(new FixFSMULD());
-  }
-  if (this->getSparcTargetMachine().getSubtargetImpl()->replaceFMULS())
-  {
-    addPass(new ReplaceFMULS());
-  }
-  if (this->getSparcTargetMachine().getSubtargetImpl()->detectRoundChange()) {
-    addPass(new DetectRoundChange());
-  }
-  if (this->getSparcTargetMachine().getSubtargetImpl()->fixAllFDIVSQRT())
-  {
-    addPass(new FixAllFDIVSQRT());
-  }
+void SNESPassConfig::addPreRegAlloc() {
+  // Create the dynalloc SP save/restore pass to handle variable sized allocas.
+  addPass(createSNESDynAllocaSRPass());
 }
-*/
+
+void SNESPassConfig::addPreSched2() {
+  addPass(createSNESRelaxMemPass());
+  addPass(createSNESExpandPseudoPass());
+}
+
+void SNESPassConfig::addPreEmitPass() {
+  // Must run branch selection immediately preceding the asm printer.
+  addPass(&BranchRelaxationPassID);
+}
+
+} // end of namespace llvm

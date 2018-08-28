@@ -18,5 +18,6 @@ Target &getTheSNESTarget() {
 
 extern "C" void LLVMInitializeSNESTargetInfo() {
   llvm::RegisterTarget<llvm::Triple::snes> X(llvm::getTheSNESTarget(), "snes",
-                                            "Super Nintendo 65c816");
+                                            "Atmel SNES Microcontroller");
 }
+

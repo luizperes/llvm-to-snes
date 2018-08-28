@@ -1,4 +1,4 @@
-;===- ./lib/Target/SNES/TargetInfo/LLVMBuild.txt ----------------*- Conf -*--===;
+;===- ./lib/Target/SNES/MCTargetDesc/LLVMBuild.txt --------------*- Conf -*--===;
 ;
 ;                     The LLVM Compiler Infrastructure
 ;
@@ -17,7 +17,7 @@
 
 [component_0]
 type = Library
-name = SNESInfo
+name = SNESDesc
 parent = SNES
-required_libraries = MC Support
+required_libraries = MC SNESAsmPrinter SNESInfo Support
 add_to_library_groups = SNES
