@@ -25,7 +25,7 @@
 
 namespace llvm {
 
-static const char *SNESDataLayout = "e-p:16:16:16-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-n8";
+static const char *SNESDataLayout = "e-p:16:8:8-i1:8:8-i8:8:8-i16:8:8-n8:16";
 
 /// Processes a CPU name.
 static StringRef getCPU(StringRef CPU) {
