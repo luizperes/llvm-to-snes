@@ -30,7 +30,7 @@ static const char *SNESDataLayout = "e-p:16:8:8-i1:8:8-i8:8:8-i16:8:8-n8:16";
 /// Processes a CPU name.
 static StringRef getCPU(StringRef CPU) {
   if (CPU.empty() || CPU == "generic") {
-    return "snes2";
+    return "snes";
   }
 
   return CPU;
