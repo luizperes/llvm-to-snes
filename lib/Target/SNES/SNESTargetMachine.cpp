@@ -65,9 +65,9 @@ public:
   }
 
   bool addInstSelector() override;
-  void addPreSched2() override;
-  void addPreEmitPass() override;
-  void addPreRegAlloc() override;
+  // void addPreSched2() override;
+  // void addPreEmitPass() override;
+  // void addPreRegAlloc() override;
 };
 } // namespace
 
@@ -100,26 +100,26 @@ const SNESSubtarget *SNESTargetMachine::getSubtargetImpl(const Function &) const
 
 bool SNESPassConfig::addInstSelector() {
   // Install an instruction selector.
-  // addPass(createSNESISelDag(getSNESTargetMachine(), getOptLevel()));
+  addPass(createSNESISelDag(getSNESTargetMachine(), getOptLevel()));
   // // Create the frame analyzer pass used by the PEI pass.
   // addPass(createSNESFrameAnalyzerPass());
 
   return false;
 }
 
-void SNESPassConfig::addPreRegAlloc() {
-  // Create the dynalloc SP save/restore pass to handle variable sized allocas.
-  // addPass(createSNESDynAllocaSRPass());
-}
+// void SNESPassConfig::addPreRegAlloc() {
+//   // Create the dynalloc SP save/restore pass to handle variable sized allocas.
+//   // addPass(createSNESDynAllocaSRPass());
+// }
 
-void SNESPassConfig::addPreSched2() {
-  // addPass(createSNESRelaxMemPass());
-  // addPass(createSNESExpandPseudoPass());
-}
+// void SNESPassConfig::addPreSched2() {
+//   // addPass(createSNESRelaxMemPass());
+//   // addPass(createSNESExpandPseudoPass());
+// }
 
-void SNESPassConfig::addPreEmitPass() {
-  // Must run branch selection immediately preceding the asm printer.
-  // addPass(&BranchRelaxationPassID);
-}
+// void SNESPassConfig::addPreEmitPass() {
+//   // Must run branch selection immediately preceding the asm printer.
+//   // addPass(&BranchRelaxationPassID);
+// }
 
 } // end of namespace llvm

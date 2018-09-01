@@ -13,4 +13,6 @@ The wiki's homepage for general information
 
 # How to test it
 
-Run: `cmake -DLLVM_TARGETS_TO_BUILD=X86 . --build . -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=SNES`
+Run:
+  - `cmake -DLLVM_TARGETS_TO_BUILD=X86 . --build . -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=SNES`
+  - `llc -march=snes <filename>.(ll|bc)`
