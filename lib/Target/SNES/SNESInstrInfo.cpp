@@ -49,10 +49,11 @@ void SNESInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
 
   // Not all SNES devices support the 16-bit `MOVW` instruction.
   if (SNES::DREGSRegClass.contains(DestReg, SrcReg)) {
-    if (STI.hasMOVW()) {
-      BuildMI(MBB, MI, DL, get(SNES::MOVWRdRr), DestReg)
-          .addReg(SrcReg, getKillRegState(KillSrc));
-    } else {
+    // TODO: check if we need hasMOVW
+    // if (STI.hasMOVW()) {
+    //   BuildMI(MBB, MI, DL, get(SNES::MOVWRdRr), DestReg)
+    //       .addReg(SrcReg, getKillRegState(KillSrc));
+    // } else {
       unsigned DestLo, DestHi, SrcLo, SrcHi;
 
       TRI.splitReg(DestReg, DestLo, DestHi);
@@ -63,7 +64,7 @@ void SNESInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
         .addReg(SrcLo, getKillRegState(KillSrc));
       BuildMI(MBB, MI, DL, get(SNES::MOVRdRr), DestHi)
         .addReg(SrcHi, getKillRegState(KillSrc));
-    }
+    // }
   } else {
     if (SNES::GPR8RegClass.contains(DestReg, SrcReg)) {
       Opc = SNES::MOVRdRr;

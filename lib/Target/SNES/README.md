@@ -1,8 +1,8 @@
-# SNES backend
+# LLVM IR to the SNES plataform
 
-This experimental backend is for the 8-bit Atmel [SNES](https://en.wikipedia.org/wiki/Atmel_SNES) microcontroller.
+* [SNES 65816 Reference](https://wiki.superfamicom.org/65816-reference)
+* [LLVM Backend API](https://llvm.org/docs/WritingAnLLVMBackend.html)
 
-## Useful links
+The wiki's homepage for general information
 
-* [Unresolved bugs](https://llvm.org/bugs/buglist.cgi?product=libraries&component=Backend%3A%20SNES&resolution=---&list_id=109466)
-* [Architecture notes](https://github.com/snes-llvm/architecture)
+* [Superfamicom's wiki](https://wiki.superfamicom.org/)

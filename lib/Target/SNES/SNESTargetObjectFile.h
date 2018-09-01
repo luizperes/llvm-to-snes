@@ -25,7 +25,8 @@ public:
                                     const TargetMachine &TM) const override;
 
 private:
-  MCSection *ProgmemDataSection;
+  // TODO: check program data section
+  // MCSection *ProgmemDataSection;
 };
 
 } // end namespace llvm

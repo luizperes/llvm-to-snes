@@ -2,24 +2,24 @@
 
 - [ ] AsmParser
   - [ ] SNESAsmParser.cpp
-  - [ ] LLVMBuild.txt
-  - [ ] CMakeLists.txt
+  - [x] LLVMBuild.txt
+  - [x] CMakeLists.txt
 - [ ] Disassembler
   - [ ] SNESDisassembler.cpp
-  - [ ] LLVMBuild.txt
-  - [ ] CMakeLists.txt
+  - [x] LLVMBuild.txt
+  - [x] CMakeLists.txt
 - [ ] InstPrinter
   - [ ] SNESInstPrinter.h
   - [ ] SNESInstPrinter.cpp
-  - [ ] LLVMBuild.txt
-  - [ ] CMakeLists.txt
+  - [x] LLVMBuild.txt
+  - [x] CMakeLists.txt
 - [ ] MCTargetDesc
-  - [ ] CMakeLists.txt
+  - [x] CMakeLists.txt
+  - [x] LLVMBuild.txt
   - [ ] SNESELFObjectWriter.cpp
   - [ ] SNESMCAsmInfo.cpp
   - [ ] SNESMCExpr.cpp
   - [ ] SNESTargetStreamer.cpp
-  - [ ] LLVMBuild.txt
   - [ ] SNESELFStreamer.cpp
   - [ ] SNESMCAsmInfo.h
   - [ ] SNESMCExpr.h
@@ -33,35 +33,35 @@
   - [ ] SNESMCCodeEmitter.h
   - [ ] SNESMCTargetDesc.h
 - [ ] TargetInfo
-  - [ ] CMakeLists.txt
-  - [ ] LLVMBuild.txt
-  - [ ] SNESTargetInfo.cpp
+  - [x] CMakeLists.txt
+  - [x] LLVMBuild.txt
+  - [x] SNESTargetInfo.cpp
+- [x] README.md
+- [x] LLVMBuild.txt
+- [x] CMakeLists.txt
+- [x] SNES.td
+- [x] SNESTargetObjectFile.cpp
+- [x] SNESTargetObjectFile.h
+- [x] SNES.h
+- [x] SNESTargetMachine.cpp
+- [x] SNESTargetMachine.h
+- [x] SNESSubtarget.cpp
+- [x] SNESSubtarget.h
+- [x] SNESSelectionDAGInfo.h
+- [x] SNESRelaxMemOperations.cpp
 - [ ] SNESMCInstLower.h
 - [ ] SNESCallingConv.td
-- [ ] SNESTargetObjectFile.h
 - [ ] SNESMCInstLower.cpp
 - [ ] SNESAsmPrinter.cpp
-- [ ] SNESTargetObjectFile.cpp
 - [ ] SNESInstrumentFunctions.cpp
-- [ ] SNES.td
-- [ ] SNESTargetMachine.h
 - [ ] SNESInstrInfo.td
-- [ ] SNES.h
-- [ ] SNESTargetMachine.cpp
 - [ ] SNESInstrInfo.h
-- [ ] README.md
-- [ ] SNESSubtarget.h
 - [ ] SNESInstrInfo.cpp
-- [ ] SNESSubtarget.cpp
 - [ ] SNESInstrFormats.td
-- [ ] LLVMBuild.txt
-- [ ] SNESSelectionDAGInfo.h
 - [ ] SNESISelLowering.h
-- [ ] SNESRelaxMemOperations.cpp
 - [ ] SNESISelLowering.cpp
 - [ ] SNESRegisterInfo.td
 - [ ] SNESISelDAGToDAG.cpp
-- [ ] CMakeLists.txt
 - [ ] SNESRegisterInfo.h
 - [ ] SNESFrameLowering.h
 - [ ] SNESRegisterInfo.cpp
