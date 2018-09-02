@@ -217,7 +217,7 @@ bool SNESDAGToDAGISel::SelectInlineAsmMemoryOperand(const SDValue &Op,
 
   // If address operand is of PTRDISPREGS class, all is OK, then.
   if (RegNode &&
-      RI.getRegClass(RegNode->getReg()) == &SNES::PTRDISPREGSRegClass) {
+      RI.getRegClass(RegNode->getReg()) == &SNES::MainRegsRegClass) {
     OutOps.push_back(Op);
     return false;
   }
@@ -253,7 +253,7 @@ bool SNESDAGToDAGISel::SelectInlineAsmMemoryOperand(const SDValue &Op,
           cast<RegisterSDNode>(CopyFromRegOp->getOperand(1));
       Reg = RegNode->getReg();
       CanHandleRegImmOpt &= (TargetRegisterInfo::isVirtualRegister(Reg) ||
-                             SNES::PTRDISPREGSRegClass.contains(Reg));
+                             SNES::MainRegsRegClass.contains(Reg));
     } else {
       CanHandleRegImmOpt = false;
     }
@@ -263,10 +263,10 @@ bool SNESDAGToDAGISel::SelectInlineAsmMemoryOperand(const SDValue &Op,
     if (CanHandleRegImmOpt) {
       SDValue Base, Disp;
 
-      if (RI.getRegClass(Reg) != &SNES::PTRDISPREGSRegClass) {
+      if (RI.getRegClass(Reg) != &SNES::MainRegsRegClass) {
         SDLoc dl(CopyFromRegOp);
 
-        unsigned VReg = RI.createVirtualRegister(&SNES::PTRDISPREGSRegClass);
+        unsigned VReg = RI.createVirtualRegister(&SNES::MainRegsRegClass);
 
         SDValue CopyToReg =
             CurDAG->getCopyToReg(CopyFromRegOp, dl, VReg, CopyFromRegOp);
@@ -295,7 +295,7 @@ bool SNESDAGToDAGISel::SelectInlineAsmMemoryOperand(const SDValue &Op,
   // More generic case.
   // Create chain that puts Op into pointer register
   // and return that register.
-  unsigned VReg = RI.createVirtualRegister(&SNES::PTRDISPREGSRegClass);
+  unsigned VReg = RI.createVirtualRegister(&SNES::MainRegsRegClass);
 
   SDValue CopyToReg = CurDAG->getCopyToReg(Op, dl, VReg, Op);
   SDValue CopyFromReg =
@@ -367,7 +367,7 @@ template <> bool SNESDAGToDAGISel::select<ISD::LOAD>(SDNode *N) {
     return selectIndexedLoad(N);
   }
 
-  // This is a flash memory load, move the pointer into R31R30 and emit
+  // This is a flash memory load, move the pointer into A and emit
   // the lpm instruction.
   MVT VT = LD->getMemoryVT().getSimpleVT();
   SDValue Chain = LD->getChain();
@@ -375,11 +375,11 @@ template <> bool SNESDAGToDAGISel::select<ISD::LOAD>(SDNode *N) {
   SDNode *ResNode;
   SDLoc DL(N);
 
-  Chain = CurDAG->getCopyToReg(Chain, DL, SNES::R31R30, Ptr, SDValue());
-  Ptr = CurDAG->getCopyFromReg(Chain, DL, SNES::R31R30, MVT::i16,
+  Chain = CurDAG->getCopyToReg(Chain, DL, SNES::A, Ptr, SDValue());
+  Ptr = CurDAG->getCopyFromReg(Chain, DL, SNES::A, MVT::i16,
                                Chain.getValue(1));
 
-  SDValue RegZ = CurDAG->getRegister(SNES::R31R30, MVT::i16);
+  SDValue RegZ = CurDAG->getRegister(SNES::A, MVT::i16);
 
   // Check if the opcode can be converted into an indexed load.
   if (unsigned LPMOpc = selectIndexedProgMemLoad(LD, VT)) {
@@ -434,9 +434,9 @@ template <> bool SNESDAGToDAGISel::select<SNESISD::CALL>(SDNode *N) {
   }
 
   SDLoc DL(N);
-  Chain = CurDAG->getCopyToReg(Chain, DL, SNES::R31R30, Callee, InFlag);
+  Chain = CurDAG->getCopyToReg(Chain, DL, SNES::A, Callee, InFlag);
   SmallVector<SDValue, 8> Ops;
-  Ops.push_back(CurDAG->getRegister(SNES::R31R30, MVT::i16));
+  Ops.push_back(CurDAG->getRegister(SNES::A, MVT::i16));
 
   // Map all operands into the new node.
   for (unsigned i = 2, e = LastOpNum + 1; i != e; ++i) {
@@ -461,8 +461,8 @@ template <> bool SNESDAGToDAGISel::select<ISD::BRIND>(SDNode *N) {
   SDValue JmpAddr = N->getOperand(1);
 
   SDLoc DL(N);
-  // Move the destination address of the indirect branch into R31R30.
-  Chain = CurDAG->getCopyToReg(Chain, DL, SNES::R31R30, JmpAddr);
+  // Move the destination address of the indirect branch into A.
+  Chain = CurDAG->getCopyToReg(Chain, DL, SNES::A, JmpAddr);
   SDNode *ResNode = CurDAG->getMachineNode(SNES::IJMP, DL, MVT::Other, Chain);
 
   ReplaceUses(SDValue(N, 0), SDValue(ResNode, 0));
@@ -489,7 +489,7 @@ bool SNESDAGToDAGISel::selectMultiplication(llvm::SDNode *N) {
   // Copy the low half of the result, if it is needed.
   if (N->hasAnyUseOfValue(0)) {
     SDValue CopyFromLo =
-        CurDAG->getCopyFromReg(InChain, DL, SNES::R0, Type, InGlue);
+        CurDAG->getCopyFromReg(InChain, DL, SNES::A, Type, InGlue);
 
     ReplaceUses(SDValue(N, 0), CopyFromLo);
 
@@ -500,7 +500,7 @@ bool SNESDAGToDAGISel::selectMultiplication(llvm::SDNode *N) {
   // Copy the high half of the result, if it is needed.
   if (N->hasAnyUseOfValue(1)) {
     SDValue CopyFromHi =
-        CurDAG->getCopyFromReg(InChain, DL, SNES::R1, Type, InGlue);
+        CurDAG->getCopyFromReg(InChain, DL, SNES::A, Type, InGlue);
 
     ReplaceUses(SDValue(N, 1), CopyFromHi);
 

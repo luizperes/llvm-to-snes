@@ -153,10 +153,10 @@ bool SNESAsmPrinter::PrintAsmMemoryOperand(const MachineInstr *MI,
   // the register if it's given.
   // TableGen doesn't expose a way of getting retrieving names
   // for registers.
-  if (MI->getOperand(OpNum).getReg() == SNES::R31R30) {
+  if (MI->getOperand(OpNum).getReg() == SNES::A) {
     O << "Z";
   } else {
-    assert(MI->getOperand(OpNum).getReg() == SNES::R29R28 &&
+    assert(MI->getOperand(OpNum).getReg() == SNES::X &&
            "Wrong register class for memory operand.");
     O << "Y";
   }

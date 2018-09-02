@@ -58,18 +58,18 @@ extern "C" void LLVMInitializeSNESDisassembler() {
                                          createSNESDisassembler);
 }
 
-static DecodeStatus DecodeGPR8RegisterClass(MCInst &Inst, unsigned RegNo,
+static DecodeStatus DecodeMainRegsRegisterClass(MCInst &Inst, unsigned RegNo,
                                             uint64_t Address, const void *Decoder) {
   return MCDisassembler::Success;
 }
 
-static DecodeStatus DecodeLD8RegisterClass(MCInst &Inst, unsigned RegNo,
+static DecodeStatus DecodeMainLoRegsRegisterClass(MCInst &Inst, unsigned RegNo,
                                            uint64_t Address, const void *Decoder) {
   return MCDisassembler::Success;
 }
 
-static DecodeStatus DecodePTRREGSRegisterClass(MCInst &Inst, unsigned RegNo,
-                                               uint64_t Address, const void *Decoder) {
+static DecodeStatus DecodeIndexRegsRegisterClass(MCInst &Inst, unsigned RegNo,
+                                                 uint64_t Address, const void *Decoder) {
   return MCDisassembler::Success;
 }
 

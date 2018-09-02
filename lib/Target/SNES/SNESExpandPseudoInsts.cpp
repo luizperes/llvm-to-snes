@@ -52,9 +52,9 @@ private:
   const TargetInstrInfo *TII;
 
   /// The register to be used for temporary storage.
-  const unsigned SCRATCH_REGISTER = SNES::R0;
+  const unsigned SCRATCH_REGISTER = SNES::A;
   /// The IO address of the status register.
-  const unsigned SREG_ADDR = 0x3f;
+  const unsigned P_ADDR = 0x3f;
 
   bool expandMBB(Block &MBB);
   bool expandMI(Block &MBB, BlockIt MBBI);
@@ -89,8 +89,8 @@ private:
                                 Block &MBB,
                                 BlockIt MBBI);
 
-  /// Scavenges a free GPR8 register for use.
-  unsigned scavengeGPR8(MachineInstr &MI);
+  /// Scavenges a free MainRegs register for use.
+  unsigned scavengeMainRegs(MachineInstr &MI);
 };
 
 char SNESExpandPseudo::ID = 0;
@@ -163,7 +163,7 @@ expandArith(unsigned OpLo, unsigned OpHi, Block &MBB, BlockIt MBBI) {
   if (ImpIsDead)
     MIBHI->getOperand(3).setIsDead();
 
-  // SREG is always implicitly killed
+  // P is always implicitly killed
   MIBHI->getOperand(4).setIsKill();
 
   MI.eraseFromParent();
@@ -188,7 +188,7 @@ expandLogic(unsigned Op, Block &MBB, BlockIt MBBI) {
     .addReg(DstLoReg, getKillRegState(DstIsKill))
     .addReg(SrcLoReg, getKillRegState(SrcIsKill));
 
-  // SREG is always implicitly dead
+  // P is always implicitly dead
   MIBLO->getOperand(3).setIsDead();
 
   auto MIBHI = buildMI(MBB, MBBI, Op)
@@ -236,7 +236,7 @@ expandLogicImm(unsigned Op, Block &MBB, BlockIt MBBI) {
       .addReg(DstLoReg, getKillRegState(SrcIsKill))
       .addImm(Lo8);
 
-    // SREG is always implicitly dead
+    // P is always implicitly dead
     MIBLO->getOperand(3).setIsDead();
   }
 
@@ -309,7 +309,7 @@ bool SNESExpandPseudo::expand<SNES::SUBIWRdK>(Block &MBB, BlockIt MBBI) {
   if (ImpIsDead)
     MIBHI->getOperand(3).setIsDead();
 
-  // SREG is always implicitly killed
+  // P is always implicitly killed
   MIBHI->getOperand(4).setIsKill();
 
   MI.eraseFromParent();
@@ -341,7 +341,7 @@ bool SNESExpandPseudo::expand<SNES::SBCIWRdK>(Block &MBB, BlockIt MBBI) {
     .addReg(DstLoReg, getKillRegState(SrcIsKill))
     .addImm(Lo8);
 
-  // SREG is always implicitly killed
+  // P is always implicitly killed
   MIBLO->getOperand(4).setIsKill();
 
   auto MIBHI = buildMI(MBB, MBBI, OpHi)
@@ -352,7 +352,7 @@ bool SNESExpandPseudo::expand<SNES::SBCIWRdK>(Block &MBB, BlockIt MBBI) {
   if (ImpIsDead)
     MIBHI->getOperand(3).setIsDead();
 
-  // SREG is always implicitly killed
+  // P is always implicitly killed
   MIBHI->getOperand(4).setIsKill();
 
   MI.eraseFromParent();
@@ -400,7 +400,7 @@ bool SNESExpandPseudo::expand<SNES::COMWRd>(Block &MBB, BlockIt MBBI) {
     .addReg(DstLoReg, RegState::Define | getDeadRegState(DstIsDead))
     .addReg(DstLoReg, getKillRegState(DstIsKill));
 
-  // SREG is always implicitly dead
+  // P is always implicitly dead
   MIBLO->getOperand(2).setIsDead();
 
   auto MIBHI = buildMI(MBB, MBBI, OpHi)
@@ -440,7 +440,7 @@ bool SNESExpandPseudo::expand<SNES::CPWRdRr>(Block &MBB, BlockIt MBBI) {
   if (ImpIsDead)
     MIBHI->getOperand(2).setIsDead();
 
-  // SREG is always implicitly killed
+  // P is always implicitly killed
   MIBHI->getOperand(3).setIsKill();
 
   MI.eraseFromParent();
@@ -465,7 +465,7 @@ bool SNESExpandPseudo::expand<SNES::CPCWRdRr>(Block &MBB, BlockIt MBBI) {
     .addReg(DstLoReg, getKillRegState(DstIsKill))
     .addReg(SrcLoReg, getKillRegState(SrcIsKill));
 
-  // SREG is always implicitly killed
+  // P is always implicitly killed
   MIBLO->getOperand(3).setIsKill();
 
   auto MIBHI = buildMI(MBB, MBBI, OpHi)
@@ -475,7 +475,7 @@ bool SNESExpandPseudo::expand<SNES::CPCWRdRr>(Block &MBB, BlockIt MBBI) {
   if (ImpIsDead)
     MIBHI->getOperand(2).setIsDead();
 
-  // SREG is always implicitly killed
+  // P is always implicitly killed
   MIBHI->getOperand(3).setIsKill();
 
   MI.eraseFromParent();
@@ -589,7 +589,7 @@ bool SNESExpandPseudo::expand<SNES::LDWRdPtr>(Block &MBB, BlockIt MBBI) {
 
   // Use a temporary register if src and dst registers are the same.
   if (DstReg == SrcReg)
-    TmpReg = scavengeGPR8(MI);
+    TmpReg = scavengeMainRegs(MI);
 
   unsigned CurDstLoReg = (DstReg == SrcReg) ? TmpReg : DstLoReg;
   unsigned CurDstHiReg = (DstReg == SrcReg) ? TmpReg : DstHiReg;
@@ -703,7 +703,7 @@ bool SNESExpandPseudo::expand<SNES::LDDWRdPtrQ>(Block &MBB, BlockIt MBBI) {
 
   // Use a temporary register if src and dst registers are the same.
   if (DstReg == SrcReg)
-    TmpReg = scavengeGPR8(MI);
+    TmpReg = scavengeMainRegs(MI);
 
   unsigned CurDstLoReg = (DstReg == SrcReg) ? TmpReg : DstLoReg;
   unsigned CurDstHiReg = (DstReg == SrcReg) ? TmpReg : DstHiReg;
@@ -754,10 +754,10 @@ bool SNESExpandPseudo::expandAtomic(Block &MBB, BlockIt MBBI, Func f) {
   // Remove the pseudo instruction.
   MachineInstr &MI = *MBBI;
 
-  // Store the SREG.
+  // Store the P.
   buildMI(MBB, MBBI, SNES::INRdA)
     .addReg(SCRATCH_REGISTER, RegState::Define)
-    .addImm(SREG_ADDR);
+    .addImm(P_ADDR);
 
   // Disable exceptions.
   buildMI(MBB, MBBI, SNES::BCLRs).addImm(7); // CLI
@@ -766,7 +766,7 @@ bool SNESExpandPseudo::expandAtomic(Block &MBB, BlockIt MBBI, Func f) {
 
   // Restore the status reg.
   buildMI(MBB, MBBI, SNES::OUTARr)
-    .addImm(SREG_ADDR)
+    .addImm(P_ADDR)
     .addReg(SCRATCH_REGISTER);
 
   MI.eraseFromParent();
@@ -816,7 +816,7 @@ bool SNESExpandPseudo::expandAtomicArithmeticOp(unsigned Width,
   });
 }
 
-unsigned SNESExpandPseudo::scavengeGPR8(MachineInstr &MI) {
+unsigned SNESExpandPseudo::scavengeMainRegs(MachineInstr &MI) {
   MachineBasicBlock &MBB = *MI.getParent();
   RegScavenger RS;
 
@@ -825,7 +825,7 @@ unsigned SNESExpandPseudo::scavengeGPR8(MachineInstr &MI) {
 
   BitVector Candidates =
       TRI->getAllocatableSet
-      (*MBB.getParent(), &SNES::GPR8RegClass);
+      (*MBB.getParent(), &SNES::MainRegsRegClass);
 
   // Exclude all the registers being used by the instruction.
   for (MachineOperand &MO : MI.operands()) {
@@ -834,7 +834,7 @@ unsigned SNESExpandPseudo::scavengeGPR8(MachineInstr &MI) {
       Candidates.reset(MO.getReg());
   }
 
-  BitVector Available = RS.getRegsAvailable(&SNES::GPR8RegClass);
+  BitVector Available = RS.getRegsAvailable(&SNES::MainRegsRegClass);
   Available &= Candidates;
 
   signed Reg = Available.find_first();
@@ -1216,7 +1216,7 @@ bool SNESExpandPseudo::expand<SNES::LSLWRd>(Block &MBB, BlockIt MBBI) {
   if (ImpIsDead)
     MIBHI->getOperand(2).setIsDead();
 
-  // SREG is always implicitly killed
+  // P is always implicitly killed
   MIBHI->getOperand(3).setIsKill();
 
   MI.eraseFromParent();
@@ -1247,7 +1247,7 @@ bool SNESExpandPseudo::expand<SNES::LSRWRd>(Block &MBB, BlockIt MBBI) {
   if (ImpIsDead)
     MIBLO->getOperand(2).setIsDead();
 
-  // SREG is always implicitly killed
+  // P is always implicitly killed
   MIBLO->getOperand(3).setIsKill();
 
   MI.eraseFromParent();
@@ -1290,133 +1290,133 @@ bool SNESExpandPseudo::expand<SNES::ASRWRd>(Block &MBB, BlockIt MBBI) {
   if (ImpIsDead)
     MIBLO->getOperand(2).setIsDead();
 
-  // SREG is always implicitly killed
+  // P is always implicitly killed
   MIBLO->getOperand(3).setIsKill();
 
   MI.eraseFromParent();
   return true;
 }
 
-template <> bool SNESExpandPseudo::expand<SNES::SEXT>(Block &MBB, BlockIt MBBI) {
-  MachineInstr &MI = *MBBI;
-  unsigned DstLoReg, DstHiReg;
-  // sext R17:R16, R17
-  // mov     r16, r17
-  // lsl     r17
-  // sbc     r17, r17
-  // sext R17:R16, R13
-  // mov     r16, r13
-  // mov     r17, r13
-  // lsl     r17
-  // sbc     r17, r17
-  // sext R17:R16, R16
-  // mov     r17, r16
-  // lsl     r17
-  // sbc     r17, r17
-  unsigned DstReg = MI.getOperand(0).getReg();
-  unsigned SrcReg = MI.getOperand(1).getReg();
-  bool DstIsDead = MI.getOperand(0).isDead();
-  bool SrcIsKill = MI.getOperand(1).isKill();
-  bool ImpIsDead = MI.getOperand(2).isDead();
-  TRI->splitReg(DstReg, DstLoReg, DstHiReg);
+// template <> bool SNESExpandPseudo::expand<SNES::SEXT>(Block &MBB, BlockIt MBBI) {
+//   MachineInstr &MI = *MBBI;
+//   unsigned DstLoReg, DstHiReg;
+//   // sext R17:R16, R17
+//   // mov     r16, r17
+//   // lsl     r17
+//   // sbc     r17, r17
+//   // sext R17:R16, R13
+//   // mov     r16, r13
+//   // mov     r17, r13
+//   // lsl     r17
+//   // sbc     r17, r17
+//   // sext R17:R16, R16
+//   // mov     r17, r16
+//   // lsl     r17
+//   // sbc     r17, r17
+//   unsigned DstReg = MI.getOperand(0).getReg();
+//   unsigned SrcReg = MI.getOperand(1).getReg();
+//   bool DstIsDead = MI.getOperand(0).isDead();
+//   bool SrcIsKill = MI.getOperand(1).isKill();
+//   bool ImpIsDead = MI.getOperand(2).isDead();
+//   TRI->splitReg(DstReg, DstLoReg, DstHiReg);
 
-  if (SrcReg != DstLoReg) {
-    auto MOV = buildMI(MBB, MBBI, SNES::MOVRdRr)
-      .addReg(DstLoReg, RegState::Define | getDeadRegState(DstIsDead))
-      .addReg(SrcReg);
+//   if (SrcReg != DstLoReg) {
+//     auto MOV = buildMI(MBB, MBBI, SNES::MOVRdRr)
+//       .addReg(DstLoReg, RegState::Define | getDeadRegState(DstIsDead))
+//       .addReg(SrcReg);
 
-    if (SrcReg == DstHiReg) {
-      MOV->getOperand(1).setIsKill();
-    }
-  }
+//     if (SrcReg == DstHiReg) {
+//       MOV->getOperand(1).setIsKill();
+//     }
+//   }
 
-  if (SrcReg != DstHiReg) {
-    buildMI(MBB, MBBI, SNES::MOVRdRr)
-      .addReg(DstHiReg, RegState::Define)
-      .addReg(SrcReg, getKillRegState(SrcIsKill));
-  }
+//   if (SrcReg != DstHiReg) {
+//     buildMI(MBB, MBBI, SNES::MOVRdRr)
+//       .addReg(DstHiReg, RegState::Define)
+//       .addReg(SrcReg, getKillRegState(SrcIsKill));
+//   }
 
-  buildMI(MBB, MBBI, SNES::LSLRd)
-    .addReg(DstHiReg, RegState::Define)
-    .addReg(DstHiReg, RegState::Kill);
+//   buildMI(MBB, MBBI, SNES::LSLRd)
+//     .addReg(DstHiReg, RegState::Define)
+//     .addReg(DstHiReg, RegState::Kill);
 
-  auto SBC = buildMI(MBB, MBBI, SNES::SBCRdRr)
-    .addReg(DstHiReg, RegState::Define | getDeadRegState(DstIsDead))
-    .addReg(DstHiReg, RegState::Kill)
-    .addReg(DstHiReg, RegState::Kill);
+//   auto SBC = buildMI(MBB, MBBI, SNES::SBCRdRr)
+//     .addReg(DstHiReg, RegState::Define | getDeadRegState(DstIsDead))
+//     .addReg(DstHiReg, RegState::Kill)
+//     .addReg(DstHiReg, RegState::Kill);
 
-  if (ImpIsDead)
-    SBC->getOperand(3).setIsDead();
+//   if (ImpIsDead)
+//     SBC->getOperand(3).setIsDead();
 
-  // SREG is always implicitly killed
-  SBC->getOperand(4).setIsKill();
+//   // P is always implicitly killed
+//   SBC->getOperand(4).setIsKill();
 
-  MI.eraseFromParent();
-  return true;
-}
+//   MI.eraseFromParent();
+//   return true;
+// }
 
-template <> bool SNESExpandPseudo::expand<SNES::ZEXT>(Block &MBB, BlockIt MBBI) {
-  MachineInstr &MI = *MBBI;
-  unsigned DstLoReg, DstHiReg;
-  // zext R25:R24, R20
-  // mov      R24, R20
-  // eor      R25, R25
-  // zext R25:R24, R24
-  // eor      R25, R25
-  // zext R25:R24, R25
-  // mov      R24, R25
-  // eor      R25, R25
-  unsigned DstReg = MI.getOperand(0).getReg();
-  unsigned SrcReg = MI.getOperand(1).getReg();
-  bool DstIsDead = MI.getOperand(0).isDead();
-  bool SrcIsKill = MI.getOperand(1).isKill();
-  bool ImpIsDead = MI.getOperand(2).isDead();
-  TRI->splitReg(DstReg, DstLoReg, DstHiReg);
+// template <> bool SNESExpandPseudo::expand<SNES::ZEXT>(Block &MBB, BlockIt MBBI) {
+//   MachineInstr &MI = *MBBI;
+//   unsigned DstLoReg, DstHiReg;
+//   // zext R25:R24, R20
+//   // mov      R24, R20
+//   // eor      R25, R25
+//   // zext R25:R24, R24
+//   // eor      R25, R25
+//   // zext R25:R24, R25
+//   // mov      R24, R25
+//   // eor      R25, R25
+//   unsigned DstReg = MI.getOperand(0).getReg();
+//   unsigned SrcReg = MI.getOperand(1).getReg();
+//   bool DstIsDead = MI.getOperand(0).isDead();
+//   bool SrcIsKill = MI.getOperand(1).isKill();
+//   bool ImpIsDead = MI.getOperand(2).isDead();
+//   TRI->splitReg(DstReg, DstLoReg, DstHiReg);
 
-  if (SrcReg != DstLoReg) {
-    buildMI(MBB, MBBI, SNES::MOVRdRr)
-      .addReg(DstLoReg, RegState::Define | getDeadRegState(DstIsDead))
-      .addReg(SrcReg, getKillRegState(SrcIsKill));
-  }
+//   if (SrcReg != DstLoReg) {
+//     buildMI(MBB, MBBI, SNES::MOVRdRr)
+//       .addReg(DstLoReg, RegState::Define | getDeadRegState(DstIsDead))
+//       .addReg(SrcReg, getKillRegState(SrcIsKill));
+//   }
 
-  auto EOR = buildMI(MBB, MBBI, SNES::EORRdRr)
-    .addReg(DstHiReg, RegState::Define | getDeadRegState(DstIsDead))
-    .addReg(DstHiReg, RegState::Kill)
-    .addReg(DstHiReg, RegState::Kill);
+//   auto EOR = buildMI(MBB, MBBI, SNES::EORRdRr)
+//     .addReg(DstHiReg, RegState::Define | getDeadRegState(DstIsDead))
+//     .addReg(DstHiReg, RegState::Kill)
+//     .addReg(DstHiReg, RegState::Kill);
 
-  if (ImpIsDead)
-    EOR->getOperand(3).setIsDead();
+//   if (ImpIsDead)
+//     EOR->getOperand(3).setIsDead();
 
-  MI.eraseFromParent();
-  return true;
-}
+//   MI.eraseFromParent();
+//   return true;
+// }
 
-template <>
-bool SNESExpandPseudo::expand<SNES::SPREAD>(Block &MBB, BlockIt MBBI) {
-  MachineInstr &MI = *MBBI;
-  unsigned OpLo, OpHi, DstLoReg, DstHiReg;
-  unsigned DstReg = MI.getOperand(0).getReg();
-  bool DstIsDead = MI.getOperand(0).isDead();
-  unsigned Flags = MI.getFlags();
-  OpLo = SNES::INRdA;
-  OpHi = SNES::INRdA;
-  TRI->splitReg(DstReg, DstLoReg, DstHiReg);
+// template <>
+// bool SNESExpandPseudo::expand<SNES::SPREAD>(Block &MBB, BlockIt MBBI) {
+//   MachineInstr &MI = *MBBI;
+//   unsigned OpLo, OpHi, DstLoReg, DstHiReg;
+//   unsigned DstReg = MI.getOperand(0).getReg();
+//   bool DstIsDead = MI.getOperand(0).isDead();
+//   unsigned Flags = MI.getFlags();
+//   OpLo = SNES::INRdA;
+//   OpHi = SNES::INRdA;
+//   TRI->splitReg(DstReg, DstLoReg, DstHiReg);
 
-  // Low part
-  buildMI(MBB, MBBI, OpLo)
-    .addReg(DstLoReg, RegState::Define | getDeadRegState(DstIsDead))
-    .addImm(0x3d)
-    .setMIFlags(Flags);
+//   // Low part
+//   buildMI(MBB, MBBI, OpLo)
+//     .addReg(DstLoReg, RegState::Define | getDeadRegState(DstIsDead))
+//     .addImm(0x3d)
+//     .setMIFlags(Flags);
 
-  // High part
-  buildMI(MBB, MBBI, OpHi)
-    .addReg(DstHiReg, RegState::Define | getDeadRegState(DstIsDead))
-    .addImm(0x3e)
-    .setMIFlags(Flags);
+//   // High part
+//   buildMI(MBB, MBBI, OpHi)
+//     .addReg(DstHiReg, RegState::Define | getDeadRegState(DstIsDead))
+//     .addImm(0x3e)
+//     .setMIFlags(Flags);
 
-  MI.eraseFromParent();
-  return true;
-}
+//   MI.eraseFromParent();
+//   return true;
+// }
 
 template <>
 bool SNESExpandPseudo::expand<SNES::SPWRITE>(Block &MBB, BlockIt MBBI) {
@@ -1428,8 +1428,8 @@ bool SNESExpandPseudo::expand<SNES::SPWRITE>(Block &MBB, BlockIt MBBI) {
   TRI->splitReg(SrcReg, SrcLoReg, SrcHiReg);
 
   buildMI(MBB, MBBI, SNES::INRdA)
-    .addReg(SNES::R0, RegState::Define)
-    .addImm(SREG_ADDR)
+    .addReg(SNES::A, RegState::Define)
+    .addImm(P_ADDR)
     .setMIFlags(Flags);
 
   buildMI(MBB, MBBI, SNES::BCLRs).addImm(0x07).setMIFlags(Flags);
@@ -1440,8 +1440,8 @@ bool SNESExpandPseudo::expand<SNES::SPWRITE>(Block &MBB, BlockIt MBBI) {
     .setMIFlags(Flags);
 
   buildMI(MBB, MBBI, SNES::OUTARr)
-    .addImm(SREG_ADDR)
-    .addReg(SNES::R0, RegState::Kill)
+    .addImm(P_ADDR)
+    .addReg(SNES::A, RegState::Kill)
     .setMIFlags(Flags);
 
   buildMI(MBB, MBBI, SNES::OUTARr)
@@ -1514,8 +1514,6 @@ bool SNESExpandPseudo::expandMI(Block &MBB, BlockIt MBBI) {
     EXPAND(SNES::RORWRd);
     EXPAND(SNES::ROLWRd);
     EXPAND(SNES::ASRWRd);
-    EXPAND(SNES::SEXT);
-    EXPAND(SNES::ZEXT);
     EXPAND(SNES::SPREAD);
     EXPAND(SNES::SPWRITE);
   }

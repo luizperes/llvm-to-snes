@@ -75,24 +75,24 @@ void SNESFrameLowering::emitPrologue(MachineFunction &MF,
         .setMIFlag(MachineInstr::FrameSetup);
   }
 
-  // Emit special prologue code to save R1, R0 and SREG in interrupt/signal
+  // Emit special prologue code to save R1, A and P in interrupt/signal
   // handlers before saving any other registers.
   if (CallConv == CallingConv::SNES_INTR ||
       CallConv == CallingConv::SNES_SIGNAL) {
     BuildMI(MBB, MBBI, DL, TII.get(SNES::PUSHWRr))
-        .addReg(SNES::R1R0, RegState::Kill)
+        .addReg(SNES::AA, RegState::Kill)
         .setMIFlag(MachineInstr::FrameSetup);
 
-    BuildMI(MBB, MBBI, DL, TII.get(SNES::INRdA), SNES::R0)
+    BuildMI(MBB, MBBI, DL, TII.get(SNES::INRdA), SNES::A)
         .addImm(0x3f)
         .setMIFlag(MachineInstr::FrameSetup);
     BuildMI(MBB, MBBI, DL, TII.get(SNES::PUSHRr))
-        .addReg(SNES::R0, RegState::Kill)
+        .addReg(SNES::A, RegState::Kill)
         .setMIFlag(MachineInstr::FrameSetup);
     BuildMI(MBB, MBBI, DL, TII.get(SNES::EORRdRr))
-        .addReg(SNES::R0, RegState::Define)
-        .addReg(SNES::R0, RegState::Kill)
-        .addReg(SNES::R0, RegState::Kill)
+        .addReg(SNES::A, RegState::Define)
+        .addReg(SNES::A, RegState::Kill)
+        .addReg(SNES::A, RegState::Kill)
         .setMIFlag(MachineInstr::FrameSetup);
   }
 
@@ -134,7 +134,7 @@ void SNESFrameLowering::emitPrologue(MachineFunction &MF,
                          .addReg(SNES::R29R28, RegState::Kill)
                          .addImm(FrameSize)
                          .setMIFlag(MachineInstr::FrameSetup);
-  // The SREG implicit def is dead.
+  // The P implicit def is dead.
   MI->getOperand(3).setIsDead();
 
   // Write back R29R28 to SP and temporarily disable interrupts.
@@ -169,14 +169,14 @@ void SNESFrameLowering::emitEpilogue(MachineFunction &MF,
   const SNESSubtarget &STI = MF.getSubtarget<SNESSubtarget>();
   const SNESInstrInfo &TII = *STI.getInstrInfo();
 
-  // Emit special epilogue code to restore R1, R0 and SREG in interrupt/signal
+  // Emit special epilogue code to restore R1, A and P in interrupt/signal
   // handlers at the very end of the function, just before reti.
   if (isHandler) {
-    BuildMI(MBB, MBBI, DL, TII.get(SNES::POPRd), SNES::R0);
+    BuildMI(MBB, MBBI, DL, TII.get(SNES::POPRd), SNES::A);
     BuildMI(MBB, MBBI, DL, TII.get(SNES::OUTARr))
         .addImm(0x3f)
-        .addReg(SNES::R0, RegState::Kill);
-    BuildMI(MBB, MBBI, DL, TII.get(SNES::POPWRd), SNES::R1R0);
+        .addReg(SNES::A, RegState::Kill);
+    BuildMI(MBB, MBBI, DL, TII.get(SNES::POPWRd), SNES::AA);
   }
 
   if (hasFP(MF))
@@ -213,7 +213,7 @@ void SNESFrameLowering::emitEpilogue(MachineFunction &MF,
   MachineInstr *MI = BuildMI(MBB, MBBI, DL, TII.get(Opcode), SNES::R29R28)
                          .addReg(SNES::R29R28, RegState::Kill)
                          .addImm(FrameSize);
-  // The SREG implicit def is dead.
+  // The P implicit def is dead.
   MI->getOperand(3).setIsDead();
 
   // Write back R29R28 to SP and temporarily disable interrupts.
@@ -358,7 +358,7 @@ static void fixStackStores(MachineBasicBlock &MBB,
         (Opcode == SNES::STDWSPQRr) ? SNES::STDWPtrQRr : SNES::STDPtrQRr;
 
     MI.setDesc(TII.get(STOpc));
-    MI.getOperand(0).setReg(SNES::R29R28);
+    MI.getOperand(0).setReg(SNES::A);
 
     I = NextMI;
   }
@@ -405,15 +405,15 @@ MachineBasicBlock::iterator SNESFrameLowering::eliminateCallFramePseudoInstr(
       }
 
       // Build the instruction sequence.
-      BuildMI(MBB, MI, DL, TII.get(SNES::SPREAD), SNES::R31R30).addReg(SNES::SP);
+      BuildMI(MBB, MI, DL, TII.get(SNES::SPREAD), SNES::A).addReg(SNES::SP);
 
-      MachineInstr *New = BuildMI(MBB, MI, DL, TII.get(addOpcode), SNES::R31R30)
-                              .addReg(SNES::R31R30, RegState::Kill)
+      MachineInstr *New = BuildMI(MBB, MI, DL, TII.get(addOpcode), SNES::A)
+                              .addReg(SNES::A, RegState::Kill)
                               .addImm(Amount);
       New->getOperand(3).setIsDead();
 
       BuildMI(MBB, MI, DL, TII.get(SNES::SPWRITE), SNES::SP)
-          .addReg(SNES::R31R30, RegState::Kill);
+          .addReg(SNES::A, RegState::Kill);
     }
   }
 
@@ -518,7 +518,7 @@ struct SNESDynAllocaSR : public MachineFunctionPass {
     DebugLoc DL = EntryMBB.findDebugLoc(MBBI);
 
     unsigned SPCopy =
-        MF.getRegInfo().createVirtualRegister(&SNES::DREGSRegClass);
+        MF.getRegInfo().createVirtualRegister(&SNES::MainRegsRegClass);
 
     // Create a copy of SP in function entry before any dynallocas are
     // inserted.

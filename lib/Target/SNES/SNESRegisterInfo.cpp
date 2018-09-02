@@ -61,13 +61,11 @@ BitVector SNESRegisterInfo::getReservedRegs(const MachineFunction &MF) const {
 
   // Reserve the intermediate result registers r1 and r2
   // The result of instructions like 'mul' is always stored here.
-  Reserved.set(SNES::R0);
-  Reserved.set(SNES::R1);
-  Reserved.set(SNES::R1R0);
+  Reserved.set(SNES::A);
+  Reserved.set(SNES::X);
+  Reserved.set(SNES::Y);
 
   //  Reserve the stack pointer.
-  Reserved.set(SNES::SPL);
-  Reserved.set(SNES::SPH);
   Reserved.set(SNES::SP);
 
   // We tenatively reserve the frame pointer register r29:r28 because the
@@ -79,9 +77,9 @@ BitVector SNESRegisterInfo::getReservedRegs(const MachineFunction &MF) const {
   // TODO: Write a pass to enumerate functions which reserved the Y register
   //       but didn't end up needing a frame pointer. In these, we can
   //       convert one or two of the spills inside to use the Y register.
-  Reserved.set(SNES::R28);
-  Reserved.set(SNES::R29);
-  Reserved.set(SNES::R29R28);
+  // Reserved.set(SNES::R28);
+  // Reserved.set(SNES::R29);
+  // Reserved.set(SNES::R29R28);
 
   return Reserved;
 }
@@ -91,11 +89,11 @@ SNESRegisterInfo::getLargestLegalSuperClass(const TargetRegisterClass *RC,
                                            const MachineFunction &MF) const {
   const TargetRegisterInfo *TRI = MF.getSubtarget().getRegisterInfo();
   if (TRI->isTypeLegalForClass(*RC, MVT::i16)) {
-    return &SNES::DREGSRegClass;
+    return &SNES::MainRegsRegClass;
   }
 
   if (TRI->isTypeLegalForClass(*RC, MVT::i8)) {
-    return &SNES::GPR8RegClass;
+    return &SNES::MainRegsRegClass;
   }
 
   llvm_unreachable("Invalid register size");
@@ -158,14 +156,14 @@ void SNESRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
   // expand it into move + add.
   if (MI.getOpcode() == SNES::FRMIDX) {
     MI.setDesc(TII.get(SNES::MOVWRdRr));
-    MI.getOperand(FIOperandNum).ChangeToRegister(SNES::R29R28, false);
+    MI.getOperand(FIOperandNum).ChangeToRegister(SNES::A, false);
 
     assert(Offset > 0 && "Invalid offset");
 
     // We need to materialize the offset via an add instruction.
     unsigned Opcode;
     unsigned DstReg = MI.getOperand(0).getReg();
-    assert(DstReg != SNES::R29R28 && "Dest reg cannot be the frame pointer");
+    assert(DstReg != SNES::A && "Dest reg cannot be the frame pointer");
 
     II++; // Skip over the FRMIDX (and now MOVW) instruction.
 
@@ -182,9 +180,9 @@ void SNESRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
 
     // Select the best opcode based on DstReg and the offset size.
     switch (DstReg) {
-    case SNES::R25R24:
-    case SNES::R27R26:
-    case SNES::R31R30: {
+    // case SNES::R25R24:
+    // case SNES::R27R26:
+    case SNES::A: {
       if (isUInt<6>(Offset)) {
         Opcode = SNES::ADIWRdK;
         break;
@@ -222,31 +220,31 @@ void SNESRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
     }
 
     // It is possible that the spiller places this frame instruction in between
-    // a compare and branch, invalidating the contents of SREG set by the
+    // a compare and branch, invalidating the contents of P set by the
     // compare instruction because of the add/sub pairs. Conservatively save and
-    // restore SREG before and after each add/sub pair.
-    BuildMI(MBB, II, dl, TII.get(SNES::INRdA), SNES::R0).addImm(0x3f);
+    // restore P before and after each add/sub pair.
+    BuildMI(MBB, II, dl, TII.get(SNES::INRdA), SNES::A).addImm(0x3f);
 
-    MachineInstr *New = BuildMI(MBB, II, dl, TII.get(AddOpc), SNES::R29R28)
-                            .addReg(SNES::R29R28, RegState::Kill)
+    MachineInstr *New = BuildMI(MBB, II, dl, TII.get(AddOpc), SNES::A)
+                            .addReg(SNES::A, RegState::Kill)
                             .addImm(AddOffset);
     New->getOperand(3).setIsDead();
 
-    // Restore SREG.
+    // Restore P.
     BuildMI(MBB, std::next(II), dl, TII.get(SNES::OUTARr))
         .addImm(0x3f)
-        .addReg(SNES::R0, RegState::Kill);
+        .addReg(SNES::A, RegState::Kill);
 
-    // No need to set SREG as dead here otherwise if the next instruction is a
+    // No need to set P as dead here otherwise if the next instruction is a
     // cond branch it will be using a dead register.
-    New = BuildMI(MBB, std::next(II), dl, TII.get(SubOpc), SNES::R29R28)
-              .addReg(SNES::R29R28, RegState::Kill)
+    New = BuildMI(MBB, std::next(II), dl, TII.get(SubOpc), SNES::A)
+              .addReg(SNES::A, RegState::Kill)
               .addImm(Offset - 63 + 1);
 
     Offset = 62;
   }
 
-  MI.getOperand(FIOperandNum).ChangeToRegister(SNES::R29R28, false);
+  MI.getOperand(FIOperandNum).ChangeToRegister(SNES::A, false);
   assert(isUInt<6>(Offset) && "Offset is out of range");
   MI.getOperand(FIOperandNum + 1).ChangeToImmediate(Offset);
 }
@@ -255,7 +253,7 @@ unsigned SNESRegisterInfo::getFrameRegister(const MachineFunction &MF) const {
   const TargetFrameLowering *TFI = MF.getSubtarget().getFrameLowering();
   if (TFI->hasFP(MF)) {
     // The Y pointer register
-    return SNES::R28;
+    return SNES::A;
   }
 
   return SNES::SP;
@@ -267,13 +265,13 @@ SNESRegisterInfo::getPointerRegClass(const MachineFunction &MF,
   // FIXME: Currently we're using snes-gcc as reference, so we restrict
   // ptrs to Y and Z regs. Though snes-gcc has buggy implementation
   // of memory constraint, so we can fix it and bit snes-gcc here ;-)
-  return &SNES::PTRDISPREGSRegClass;
+  return &SNES::MainRegsRegClass;
 }
 
 void SNESRegisterInfo::splitReg(unsigned Reg,
                                unsigned &LoReg,
                                unsigned &HiReg) const {
-    assert(SNES::DREGSRegClass.contains(Reg) && "can only split 16-bit registers");
+    assert(SNES::MainRegsRegClass.contains(Reg) && "can only split 16-bit registers");
 
     LoReg = getSubReg(Reg, SNES::sub_lo);
     HiReg = getSubReg(Reg, SNES::sub_hi);

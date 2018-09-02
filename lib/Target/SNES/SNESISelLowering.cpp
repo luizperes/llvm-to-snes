@@ -34,8 +34,8 @@ namespace llvm {
 SNESTargetLowering::SNESTargetLowering(SNESTargetMachine &tm)
     : TargetLowering(tm) {
   // Set up the register classes.
-  addRegisterClass(MVT::i8, &SNES::GPR8RegClass);
-  addRegisterClass(MVT::i16, &SNES::DREGSRegClass);
+  addRegisterClass(MVT::i8, &SNES::MainRegsRegClass);
+  addRegisterClass(MVT::i16, &SNES::MainRegsRegClass);
 
   // Compute derived properties from the register classes.
   computeRegisterProperties(tm.getSubtargetImpl()->getRegisterInfo());
@@ -921,12 +921,12 @@ static void analyzeStandardArguments(TargetLowering::CallLoweringInfo *CLI,
                                      CallingConv::ID CallConv,
                                      SmallVectorImpl<CCValAssign> &ArgLocs,
                                      CCState &CCInfo, bool IsCall, bool IsVarArg) {
-  static const MCPhysReg RegList8[] = {SNES::R24, SNES::R22, SNES::R20,
-                                       SNES::R18, SNES::R16, SNES::R14,
-                                       SNES::R12, SNES::R10, SNES::R8};
-  static const MCPhysReg RegList16[] = {SNES::R25R24, SNES::R23R22, SNES::R21R20,
-                                        SNES::R19R18, SNES::R17R16, SNES::R15R14,
-                                        SNES::R13R12, SNES::R11R10, SNES::R9R8};
+  static const MCPhysReg RegList8[] = {SNES::AL, SNES::XL, SNES::YL};
+                                      //  SNES::A8, SNES::A6, SNES::A4,
+                                      //  SNES::A2, SNES::A0, SNES::R8};
+  static const MCPhysReg RegList16[] = {SNES::A, SNES::X, SNES::Y};
+                                        // SNES::A9R18, SNES::A7R16, SNES::A5R14,
+                                        // SNES::A3R12, SNES::A1R10, SNES::R9R8};
   if (IsVarArg) {
     // Variadic functions do not need all the analisys below.
     if (IsCall) {
@@ -1061,9 +1061,9 @@ SDValue SNESTargetLowering::LowerFormalArguments(
       EVT RegVT = VA.getLocVT();
       const TargetRegisterClass *RC;
       if (RegVT == MVT::i8) {
-        RC = &SNES::GPR8RegClass;
+        RC = &SNES::MainRegsRegClass;
       } else if (RegVT == MVT::i16) {
-        RC = &SNES::DREGSRegClass;
+        RC = &SNES::MainRegsRegClass;
       } else {
         llvm_unreachable("Unknown argument type!");
       }
@@ -1450,43 +1450,43 @@ MachineBasicBlock *SNESTargetLowering::insertShift(MachineInstr &MI,
     llvm_unreachable("Invalid shift opcode!");
   case SNES::Lsl8:
     Opc = SNES::LSLRd;
-    RC = &SNES::GPR8RegClass;
+    RC = &SNES::MainRegsRegClass;
     break;
   case SNES::Lsl16:
     Opc = SNES::LSLWRd;
-    RC = &SNES::DREGSRegClass;
+    RC = &SNES::MainRegsRegClass;
     break;
   case SNES::Asr8:
     Opc = SNES::ASRRd;
-    RC = &SNES::GPR8RegClass;
+    RC = &SNES::MainRegsRegClass;
     break;
   case SNES::Asr16:
     Opc = SNES::ASRWRd;
-    RC = &SNES::DREGSRegClass;
+    RC = &SNES::MainRegsRegClass;
     break;
   case SNES::Lsr8:
     Opc = SNES::LSRRd;
-    RC = &SNES::GPR8RegClass;
+    RC = &SNES::MainRegsRegClass;
     break;
   case SNES::Lsr16:
     Opc = SNES::LSRWRd;
-    RC = &SNES::DREGSRegClass;
+    RC = &SNES::MainRegsRegClass;
     break;
   case SNES::Rol8:
     Opc = SNES::ROLRd;
-    RC = &SNES::GPR8RegClass;
+    RC = &SNES::MainRegsRegClass;
     break;
   case SNES::Rol16:
     Opc = SNES::ROLWRd;
-    RC = &SNES::DREGSRegClass;
+    RC = &SNES::MainRegsRegClass;
     break;
   case SNES::Ror8:
     Opc = SNES::RORRd;
-    RC = &SNES::GPR8RegClass;
+    RC = &SNES::MainRegsRegClass;
     break;
   case SNES::Ror16:
     Opc = SNES::RORWRd;
-    RC = &SNES::DREGSRegClass;
+    RC = &SNES::MainRegsRegClass;
     break;
   }
 
@@ -1513,8 +1513,8 @@ MachineBasicBlock *SNESTargetLowering::insertShift(MachineInstr &MI,
   LoopBB->addSuccessor(RemBB);
   LoopBB->addSuccessor(LoopBB);
 
-  unsigned ShiftAmtReg = RI.createVirtualRegister(&SNES::LD8RegClass);
-  unsigned ShiftAmtReg2 = RI.createVirtualRegister(&SNES::LD8RegClass);
+  unsigned ShiftAmtReg = RI.createVirtualRegister(&SNES::MainLoRegsRegClass);
+  unsigned ShiftAmtReg2 = RI.createVirtualRegister(&SNES::MainLoRegsRegClass);
   unsigned ShiftReg = RI.createVirtualRegister(RC);
   unsigned ShiftReg2 = RI.createVirtualRegister(RC);
   unsigned ShiftAmtSrcReg = MI.getOperand(2).getReg();
@@ -1563,7 +1563,7 @@ MachineBasicBlock *SNESTargetLowering::insertShift(MachineInstr &MI,
 static bool isCopyMulResult(MachineBasicBlock::iterator const &I) {
   if (I->getOpcode() == SNES::COPY) {
     unsigned SrcReg = I->getOperand(1).getReg();
-    return (SrcReg == SNES::R0 || SrcReg == SNES::R1);
+    return (SrcReg == SNES::A || SrcReg == SNES::A);
   }
 
   return false;
@@ -1582,9 +1582,9 @@ MachineBasicBlock *SNESTargetLowering::insertMul(MachineInstr &MI,
     ++I;
   if (isCopyMulResult(I))
     ++I;
-  BuildMI(*BB, I, MI.getDebugLoc(), TII.get(SNES::EORRdRr), SNES::R1)
-      .addReg(SNES::R1)
-      .addReg(SNES::R1);
+  BuildMI(*BB, I, MI.getDebugLoc(), TII.get(SNES::EORRdRr), SNES::A)
+      .addReg(SNES::A)
+      .addReg(SNES::A);
   return BB;
 }
 
@@ -1849,36 +1849,36 @@ SNESTargetLowering::getRegForInlineAsmConstraint(const TargetRegisterInfo *TRI,
   if (Constraint.size() == 1) {
     switch (Constraint[0]) {
     case 'a': // Simple upper registers r16..r23.
-      return std::make_pair(0U, &SNES::LD8loRegClass);
+      return std::make_pair(0U, &SNES::MainLoRegsRegClass);
     case 'b': // Base pointer registers: y, z.
-      return std::make_pair(0U, &SNES::PTRDISPREGSRegClass);
+      return std::make_pair(0U, &SNES::MainRegsRegClass);
     case 'd': // Upper registers r16..r31.
-      return std::make_pair(0U, &SNES::LD8RegClass);
+      return std::make_pair(0U, &SNES::MainLoRegsRegClass);
     case 'l': // Lower registers r0..r15.
-      return std::make_pair(0U, &SNES::GPR8loRegClass);
+      return std::make_pair(0U, &SNES::MainRegsRegClass);
     case 'e': // Pointer register pairs: x, y, z.
-      return std::make_pair(0U, &SNES::PTRREGSRegClass);
+      return std::make_pair(0U, &SNES::IndexRegsRegClass);
     case 'q': // Stack pointer register: SPH:SPL.
-      return std::make_pair(0U, &SNES::GPRSPRegClass);
+      return std::make_pair(0U, &SNES::StackPointerRegsRegClass);
     case 'r': // Any register: r0..r31.
       if (VT == MVT::i8)
-        return std::make_pair(0U, &SNES::GPR8RegClass);
+        return std::make_pair(0U, &SNES::MainRegsRegClass);
 
       assert(VT == MVT::i16 && "inline asm constraint too large");
-      return std::make_pair(0U, &SNES::DREGSRegClass);
+      return std::make_pair(0U, &SNES::MainRegsRegClass);
     case 't': // Temporary register: r0.
-      return std::make_pair(unsigned(SNES::R0), &SNES::GPR8RegClass);
+      return std::make_pair(unsigned(SNES::A), &SNES::MainRegsRegClass);
     case 'w': // Special upper register pairs: r24, r26, r28, r30.
-      return std::make_pair(0U, &SNES::IWREGSRegClass);
+      return std::make_pair(0U, &SNES::MainRegsRegClass);
     case 'x': // Pointer register pair X: r27:r26.
     case 'X':
-      return std::make_pair(unsigned(SNES::R27R26), &SNES::PTRREGSRegClass);
+      return std::make_pair(unsigned(SNES::X), &SNES::IndexRegsRegClass);
     case 'y': // Pointer register pair Y: r29:r28.
     case 'Y':
-      return std::make_pair(unsigned(SNES::R29R28), &SNES::PTRREGSRegClass);
+      return std::make_pair(unsigned(SNES::Y), &SNES::IndexRegsRegClass);
     case 'z': // Pointer register pair Z: r31:r30.
     case 'Z':
-      return std::make_pair(unsigned(SNES::R31R30), &SNES::PTRREGSRegClass);
+      return std::make_pair(unsigned(SNES::A), &SNES::IndexRegsRegClass);
     default:
       break;
     }
@@ -2002,30 +2002,30 @@ unsigned SNESTargetLowering::getRegisterByName(const char *RegName,
 
   if (VT == MVT::i8) {
     Reg = StringSwitch<unsigned>(RegName)
-      .Case("r0", SNES::R0).Case("r1", SNES::R1).Case("r2", SNES::R2)
-      .Case("r3", SNES::R3).Case("r4", SNES::R4).Case("r5", SNES::R5)
-      .Case("r6", SNES::R6).Case("r7", SNES::R7).Case("r8", SNES::R8)
-      .Case("r9", SNES::R9).Case("r10", SNES::R10).Case("r11", SNES::R11)
-      .Case("r12", SNES::R12).Case("r13", SNES::R13).Case("r14", SNES::R14)
-      .Case("r15", SNES::R15).Case("r16", SNES::R16).Case("r17", SNES::R17)
-      .Case("r18", SNES::R18).Case("r19", SNES::R19).Case("r20", SNES::R20)
-      .Case("r21", SNES::R21).Case("r22", SNES::R22).Case("r23", SNES::R23)
-      .Case("r24", SNES::R24).Case("r25", SNES::R25).Case("r26", SNES::R26)
-      .Case("r27", SNES::R27).Case("r28", SNES::R28).Case("r29", SNES::R29)
-      .Case("r30", SNES::R30).Case("r31", SNES::R31)
-      .Case("X", SNES::R27R26).Case("Y", SNES::R29R28).Case("Z", SNES::R31R30)
+      // .Case("r0", SNES::A).Case("r1", SNES::A).Case("r2", SNES::R2)
+      // .Case("r3", SNES::R3).Case("r4", SNES::R4).Case("r5", SNES::R5)
+      // .Case("r6", SNES::R6).Case("r7", SNES::R7).Case("r8", SNES::R8)
+      // .Case("r9", SNES::R9).Case("r10", SNES::A0).Case("r11", SNES::A1)
+      // .Case("r12", SNES::A2).Case("r13", SNES::A3).Case("r14", SNES::A4)
+      // .Case("r15", SNES::A5).Case("r16", SNES::A6).Case("r17", SNES::A7)
+      // .Case("r18", SNES::A8).Case("r19", SNES::A9).Case("r20", SNES::R20)
+      // .Case("r21", SNES::R21).Case("r22", SNES::R22).Case("r23", SNES::R23)
+      // .Case("r24", SNES::R24).Case("r25", SNES::R25).Case("r26", SNES::R26)
+      // .Case("r27", SNES::R27).Case("r28", SNES::R28).Case("r29", SNES::R29)
+      // .Case("r30", SNES::R30).Case("r31", SNES::R31)
+      .Case("X", SNES::X).Case("Y", SNES::Y).Case("A", SNES::A)
       .Default(0);
   } else {
     Reg = StringSwitch<unsigned>(RegName)
-      .Case("r0", SNES::R1R0).Case("r2", SNES::R3R2)
-      .Case("r4", SNES::R5R4).Case("r6", SNES::R7R6)
-      .Case("r8", SNES::R9R8).Case("r10", SNES::R11R10)
-      .Case("r12", SNES::R13R12).Case("r14", SNES::R15R14)
-      .Case("r16", SNES::R17R16).Case("r18", SNES::R19R18)
-      .Case("r20", SNES::R21R20).Case("r22", SNES::R23R22)
-      .Case("r24", SNES::R25R24).Case("r26", SNES::R27R26)
-      .Case("r28", SNES::R29R28).Case("r30", SNES::R31R30)
-      .Case("X", SNES::R27R26).Case("Y", SNES::R29R28).Case("Z", SNES::R31R30)
+      // .Case("r0", SNES::AA).Case("r2", SNES::R3R2)
+      // .Case("r4", SNES::R5R4).Case("r6", SNES::R7R6)
+      // .Case("r8", SNES::R9R8).Case("r10", SNES::A1R10)
+      // .Case("r12", SNES::A3R12).Case("r14", SNES::A5R14)
+      // .Case("r16", SNES::A7R16).Case("r18", SNES::A9R18)
+      // .Case("r20", SNES::R21R20).Case("r22", SNES::R23R22)
+      // .Case("r24", SNES::R25R24).Case("r26", SNES::R27R26)
+      // .Case("r28", SNES::R29R28).Case("r30", SNES::A)
+      .Case("X", SNES::X).Case("Y", SNES::Y).Case("A", SNES::A)
       .Default(0);
   }
 

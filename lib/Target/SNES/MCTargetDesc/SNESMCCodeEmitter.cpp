@@ -74,8 +74,8 @@ SNESMCCodeEmitter::loadStorePostEncoder(const MCInst &MI, unsigned EncodedValue,
   unsigned Opcode = MI.getOpcode();
 
   // check whether either of the registers are the X pointer register.
-  bool IsRegX = MI.getOperand(0).getReg() == SNES::R27R26 ||
-                  MI.getOperand(1).getReg() == SNES::R27R26;
+  bool IsRegX = MI.getOperand(0).getReg() == SNES::A; //||
+                  // MI.getOperand(1).getReg() == SNES::R27R26;
 
   bool IsPredec = Opcode == SNES::LDRdPtrPd || Opcode == SNES::STPtrPdRr;
   bool IsPostinc = Opcode == SNES::LDRdPtrPi || Opcode == SNES::STPtrPiRr;
@@ -119,9 +119,9 @@ unsigned SNESMCCodeEmitter::encodeLDSTPtrReg(const MCInst &MI, unsigned OpNo,
   assert(MO.isReg());
 
   switch (MO.getReg()) {
-  case SNES::R27R26: return 0x03; // X: 0b11
-  case SNES::R29R28: return 0x02; // Y: 0b10
-  case SNES::R31R30: return 0x00; // Z: 0b00
+  case SNES::X: return 0x03; // X: 0b11
+  case SNES::Y: return 0x02; // Y: 0b10
+  case SNES::A: return 0x00; // Z: 0b00
   default:
     llvm_unreachable("invalid pointer register");
   }
@@ -144,10 +144,10 @@ unsigned SNESMCCodeEmitter::encodeMemri(const MCInst &MI, unsigned OpNo,
   switch (RegOp.getReg()) {
   default:
     llvm_unreachable("Expected either Y or Z register");
-  case SNES::R31R30:
+  case SNES::A:
     RegBit = 0;
     break; // Z register
-  case SNES::R29R28:
+  case SNES::X:
     RegBit = 1;
     break; // Y register
   }

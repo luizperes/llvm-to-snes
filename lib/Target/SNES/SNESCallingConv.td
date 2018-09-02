@@ -16,10 +16,10 @@
 def RetCC_SNES : CallingConv
 <[
   // i8 is returned in R24.
-  CCIfType<[i8], CCAssignToReg<[R24]>>,
+  CCIfType<[i8], CCAssignToReg<[A]>>,
 
   // i16 are returned in R25:R24, R23:R22, R21:R20 and R19:R18.
-  CCIfType<[i16], CCAssignToReg<[R25R24, R23R22, R21R20, R19R18]>>
+  CCIfType<[i16], CCAssignToReg<[A]>>
 ]>;
 
 // TODO: check the code below
@@ -56,5 +56,5 @@ def ArgCC_SNES_Vararg : CallingConv
 // Callee-saved register lists.
 //===----------------------------------------------------------------------===//
 
-def CSR_Normal : CalleeSavedRegs<(add R29, R28, (sequence "R%u", 17, 2))>;
-def CSR_Interrupts : CalleeSavedRegs<(add (sequence "R%u", 31, 0))>;
+def CSR_Normal : CalleeSavedRegs<(add A)>;
+def CSR_Interrupts : CalleeSavedRegs<(add A)>;

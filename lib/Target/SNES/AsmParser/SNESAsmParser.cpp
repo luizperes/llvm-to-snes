@@ -71,7 +71,7 @@ class SNESAsmParser : public MCTargetAsmParser {
                                       unsigned Kind) override;
 
   unsigned toDREG(unsigned Reg, unsigned From = SNES::sub_lo) {
-    MCRegisterClass const *Class = &SNESMCRegisterClasses[SNES::DREGSRegClassID];
+    MCRegisterClass const *Class = &SNESMCRegisterClasses[SNES::MainRegsRegClassID];
     return MRI->getMatchingSuperReg(Reg, From, Class);
   }
 
@@ -617,7 +617,7 @@ unsigned SNESAsmParser::validateTargetOperandClass(MCParsedAsmOperand &AsmOp,
   if (Op.isReg()) {
     // If the instruction uses a register pair but we got a single, lower
     // register we perform a "class cast".
-    if (isSubclass(Expected, MCK_DREGS)) {
+    if (isSubclass(Expected, MCK_MainRegs)) {
       unsigned correspondingDREG = toDREG(Op.getReg());
 
       if (correspondingDREG != SNES::NoRegister) {

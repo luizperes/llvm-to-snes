@@ -101,15 +101,16 @@ const char *SNESInstPrinter::getPrettyRegisterName(unsigned RegNum,
 void SNESInstPrinter::printOperand(const MCInst *MI, unsigned OpNo,
                                   raw_ostream &O) {
   const MCOperand &Op = MI->getOperand(OpNo);
-  const MCOperandInfo &MOI = this->MII.get(MI->getOpcode()).OpInfo[OpNo];
+  // const MCOperandInfo &MOI = this->MII.get(MI->getOpcode()).OpInfo[OpNo];
 
   if (Op.isReg()) {
-    bool isPtrReg = (MOI.RegClass == SNES::PTRREGSRegClassID) ||
-                    (MOI.RegClass == SNES::PTRDISPREGSRegClassID) ||
-                    (MOI.RegClass == SNES::ZREGRegClassID);
+    bool isPtrReg = false;
+    // bool isPtrReg = (MOI.RegClass == SNES::PTRREGSRegClassID) ||
+    //                 (MOI.RegClass == SNES::PTRDISPREGSRegClassID) ||
+    //                 (MOI.RegClass == SNES::XRegClassID);
 
     if (isPtrReg) {
-      O << getRegisterName(Op.getReg(), SNES::ptr);
+      O << getRegisterName(Op.getReg());
     } else {
       O << getPrettyRegisterName(Op.getReg(), MRI);
     }

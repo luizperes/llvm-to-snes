@@ -48,7 +48,7 @@ public:
   getPointerRegClass(const MachineFunction &MF,
                      unsigned Kind = 0) const override;
 
-  /// Splits a 16-bit `DREGS` register into the lo/hi register pair.
+  /// Splits a 16-bit `MainRegs` register into the lo/hi register pair.
   /// \param Reg A 16-bit register to split.
   void splitReg(unsigned Reg, unsigned &LoReg, unsigned &HiReg) const;
 };

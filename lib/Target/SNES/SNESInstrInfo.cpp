@@ -48,7 +48,7 @@ void SNESInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
   unsigned Opc;
 
   // Not all SNES devices support the 16-bit `MOVW` instruction.
-  if (SNES::DREGSRegClass.contains(DestReg, SrcReg)) {
+  if (SNES::MainRegsRegClass.contains(DestReg, SrcReg)) {
     // TODO: check if we need hasMOVW
     // if (STI.hasMOVW()) {
     //   BuildMI(MBB, MI, DL, get(SNES::MOVWRdRr), DestReg)
@@ -66,11 +66,11 @@ void SNESInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
         .addReg(SrcHi, getKillRegState(KillSrc));
     // }
   } else {
-    if (SNES::GPR8RegClass.contains(DestReg, SrcReg)) {
+    if (SNES::MainRegsRegClass.contains(DestReg, SrcReg)) {
       Opc = SNES::MOVRdRr;
-    } else if (SrcReg == SNES::SP && SNES::DREGSRegClass.contains(DestReg)) {
+    } else if (SrcReg == SNES::SP && SNES::MainRegsRegClass.contains(DestReg)) {
       Opc = SNES::SPREAD;
-    } else if (DestReg == SNES::SP && SNES::DREGSRegClass.contains(SrcReg)) {
+    } else if (DestReg == SNES::SP && SNES::MainRegsRegClass.contains(SrcReg)) {
       Opc = SNES::SPWRITE;
     } else {
       llvm_unreachable("Impossible reg-to-reg copy");
