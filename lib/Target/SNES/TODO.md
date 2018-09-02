@@ -49,9 +49,12 @@
 - [x] SNESSubtarget.h
 - [x] SNESSelectionDAGInfo.h
 - [x] SNESRelaxMemOperations.cpp
+- [x] SNESRegisterInfo.td
+- [ ] SNESRegisterInfo.h
+- [ ] SNESRegisterInfo.cpp
 - [ ] SNESMCInstLower.h
-- [ ] SNESCallingConv.td
 - [ ] SNESMCInstLower.cpp
+- [ ] SNESCallingConv.td
 - [ ] SNESAsmPrinter.cpp
 - [ ] SNESInstrumentFunctions.cpp
 - [ ] SNESInstrInfo.td
@@ -60,11 +63,8 @@
 - [ ] SNESInstrFormats.td
 - [ ] SNESISelLowering.h
 - [ ] SNESISelLowering.cpp
-- [ ] SNESRegisterInfo.td
 - [ ] SNESISelDAGToDAG.cpp
-- [ ] SNESRegisterInfo.h
 - [ ] SNESFrameLowering.h
-- [ ] SNESRegisterInfo.cpp
 - [ ] SNESFrameLowering.cpp
 - [ ] SNESMachineFunctionInfo.h
 - [ ] SNESExpandPseudoInsts.cpp
