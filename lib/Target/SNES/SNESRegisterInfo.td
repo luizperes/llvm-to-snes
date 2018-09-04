@@ -64,7 +64,7 @@ let SubRegIndices = [sub_lo, sub_hi], CoveredBySubRegs = 1 in {
 //  8-bit control registers
 //===----------------------------------------------------------------------===//
 def DB : SNESReg<9,  "DB">,  DwarfRegNum<[9]>; // Data Bank
-def P  : SNESReg<10, "P">,  DwarfRegNum<[10]>;   // Processor Status - Status register
+def P  : SNESReg<10, "P">,  DwarfRegNum<[10]>; // Processor Status - Status register
 def PB : SNESReg<11, "PB">, DwarfRegNum<[11]>; // Program Bank
 
 //===----------------------------------------------------------------------===//

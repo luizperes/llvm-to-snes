@@ -257,7 +257,7 @@ bool SNESFrameLowering::spillCalleeSavedRegisters(
     unsigned Reg = CSI[i - 1].getReg();
     bool IsNotLiveIn = !MBB.isLiveIn(Reg);
 
-    assert(TRI->getRegSizeInBits(*TRI->getMinimalPhysRegClass(Reg)) == 8 &&
+    assert(TRI->getRegSizeInBits(*TRI->getMinimalPhysRegClass(Reg)) == 16 &&
            "Invalid register size");
 
     // Add the callee-saved register as live-in only if it is not already a
@@ -295,7 +295,7 @@ bool SNESFrameLowering::restoreCalleeSavedRegisters(
   for (const CalleeSavedInfo &CCSI : CSI) {
     unsigned Reg = CCSI.getReg();
 
-    assert(TRI->getRegSizeInBits(*TRI->getMinimalPhysRegClass(Reg)) == 8 &&
+    assert(TRI->getRegSizeInBits(*TRI->getMinimalPhysRegClass(Reg)) == 16 &&
            "Invalid register size");
 
     BuildMI(MBB, MI, DL, TII.get(SNES::POPRd), Reg);

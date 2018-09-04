@@ -50,8 +50,8 @@
 - [x] SNESSelectionDAGInfo.h
 - [x] SNESRelaxMemOperations.cpp
 - [x] SNESRegisterInfo.td
-- [ ] SNESRegisterInfo.h
-- [ ] SNESRegisterInfo.cpp
+- [x] SNESRegisterInfo.h
+- [x] SNESRegisterInfo.cpp
 - [ ] SNESMCInstLower.h
 - [ ] SNESMCInstLower.cpp
 - [ ] SNESCallingConv.td
