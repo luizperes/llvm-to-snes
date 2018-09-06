@@ -37,6 +37,7 @@ let Namespace = "SNES" in
   def sub_hi : SubRegIndex<8, 8>;
 }
 
+// TODO: check if we should use the correct mnemonic for registers
 //===----------------------------------------------------------------------===//
 //  Accumulator registers
 //===----------------------------------------------------------------------===//
