@@ -24,6 +24,15 @@ class SNESInst<dag outs, dag ins, string asmstr, list<dag> pattern> : Instructio
   field bits<32> SoftFail = 0;
 }
 
+/// A 8-bit SNES instruction.
+class SNESInst8<dag outs, dag ins, string asmstr, list<dag> pattern>
+  : SNESInst<outs, ins, asmstr, pattern>
+{
+  field bits<8> Inst;
+
+  let Size = 1;
+}
+
 /// A 16-bit SNES instruction.
 class SNESInst16<dag outs, dag ins, string asmstr, list<dag> pattern>
   : SNESInst<outs, ins, asmstr, pattern>
@@ -31,6 +40,15 @@ class SNESInst16<dag outs, dag ins, string asmstr, list<dag> pattern>
   field bits<16> Inst;
 
   let Size = 2;
+}
+
+/// A 24-bit SNES instruction.
+class SNESInst24<dag outs, dag ins, string asmstr, list<dag> pattern>
+  : SNESInst<outs, ins, asmstr, pattern>
+{
+  field bits<24> Inst;
+
+  let Size = 3;
 }
 
 /// a 32-bit SNES instruction.
@@ -42,6 +60,7 @@ class SNESInst32<dag outs, dag ins, string asmstr, list<dag> pattern>
   let Size = 4;
 }
 
+// TODO: check if we are going to use pseudo instr
 // A class for pseudo instructions.
 // Psuedo instructions are not real SNES instructions. The DAG stores
 // psuedo instructions which are replaced by real SNES instructions by
@@ -57,6 +76,15 @@ class Pseudo<dag outs, dag ins, string asmstr, list<dag> pattern>
 
   let isPseudo = 1;
   let isCodeGenOnly = 1;
+}
+
+//===----------------------------------------------------------------------===//
+// Implied, opcode only instructions: <|opcode|>
+//===----------------------------------------------------------------------===//
+class SNESImplied<bits<8> opcode, dag outs, dag ins, string asmstr, list<dag> pattern>
+  : SNESInst8<outs, ins, asmstr, pattern>
+{
+  let Inst = opcode;
 }
 
 //===----------------------------------------------------------------------===//

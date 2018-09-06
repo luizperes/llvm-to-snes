@@ -247,66 +247,6 @@ def LDDSTDPtrReg : Operand<i16>
     let ParserMatchClass = PtrRegAsmOperand;
 }
 
-//===----------------------------------------------------------------------===//
-// SNES predicates for subtarget features
-//===----------------------------------------------------------------------===//
-
-// TODO: check the code below
-//def HasSRAM       :    Predicate<"Subtarget->hasSRAM()">,
-//                         AssemblerPredicate<"FeatureSRAM">;
-//
-//def HasJMPCALL    :    Predicate<"Subtarget->hasJMPCALL()">,
-//                         AssemblerPredicate<"FeatureJMPCALL">;
-//
-//def HasIJMPCALL   :    Predicate<"Subtarget->hasIJMPCALL()">,
-//                         AssemblerPredicate<"FeatureIJMPCALL">;
-//
-//def HasEIJMPCALL  :    Predicate<"Subtarget->hasEIJMPCALL()">,
-//                         AssemblerPredicate<"FeatureEIJMPCALL">;
-//
-//def HasADDSUBIW   :    Predicate<"Subtarget->hasADDSUBIW()">,
-//                         AssemblerPredicate<"FeatureADDSUBIW">;
-//
-//def HasSmallStack :    Predicate<"Subtarget->HasSmallStack()">,
-//                         AssemblerPredicate<"FeatureSmallStack">;
-//
-//def HasMOVW       :    Predicate<"Subtarget->hasMOVW()">,
-//                         AssemblerPredicate<"FeatureMOVW">;
-//
-//def HasLPM        :    Predicate<"Subtarget->hasLPM()">,
-//                         AssemblerPredicate<"FeatureLPM">;
-//
-//def HasLPMX       :    Predicate<"Subtarget->hasLPMX()">,
-//                         AssemblerPredicate<"FeatureLPMX">;
-//
-//def HasELPM       :    Predicate<"Subtarget->hasELPM()">,
-//                         AssemblerPredicate<"FeatureELPM">;
-//
-//def HasELPMX      :    Predicate<"Subtarget->hasELPMX()">,
-//                         AssemblerPredicate<"FeatureELPMX">;
-//
-//def HasSPM        :    Predicate<"Subtarget->hasSPM()">,
-//                         AssemblerPredicate<"FeatureSPM">;
-//
-//def HasSPMX       :    Predicate<"Subtarget->hasSPMX()">,
-//                         AssemblerPredicate<"FeatureSPMX">;
-//
-//def HasDES        :    Predicate<"Subtarget->hasDES()">,
-//                         AssemblerPredicate<"FeatureDES">;
-//
-//def SupportsRMW   :    Predicate<"Subtarget->supportsRMW()">,
-//                         AssemblerPredicate<"FeatureRMW">;
-//
-//def SupportsMultiplication : Predicate<"Subtarget->supportsMultiplication()">,
-//                               AssemblerPredicate<"FeatureMultiplication">;
-//
-//def HasBREAK      :    Predicate<"Subtarget->hasBREAK()">,
-//                         AssemblerPredicate<"FeatureBREAK">;
-//
-//def HasTinyEncoding : Predicate<"Subtarget->hasTinyEncoding()">,
-//                        AssemblerPredicate<"FeatureTinyEncoding">;
-
-
 // SNES specific condition code. These correspond to SNES_*_COND in
 // SNESInstrInfo.td. They must be kept in synch.
 def SNES_COND_EQ : PatLeaf<(i16 0)>;
@@ -318,10 +258,36 @@ def SNES_COND_LO : PatLeaf<(i16 5)>;
 def SNES_COND_MI : PatLeaf<(i16 6)>;
 def SNES_COND_PL : PatLeaf<(i16 7)>;
 
-
 //===----------------------------------------------------------------------===//
 //===----------------------------------------------------------------------===//
 // SNES Instruction list
+//===----------------------------------------------------------------------===//
+//===----------------------------------------------------------------------===//
+//===----------------------------------------------------------------------===//
+// Implied that change P (status) register <|opcode|>
+//===----------------------------------------------------------------------===//
+multiclass ImpP <bits<8> opcode, string asm> {
+  let Defs = [P] in {
+    def "" : SNESImplied<opcode,
+                         (outs),
+                         (ins),
+                         asm,
+                         []>;
+  }
+}
+
+// clear carry
+defm CLC : ImpP<0x18, "CLC">;
+// clear decimal mode flag
+defm CLD : ImpP<0xD8, "CLD">;
+// clear interrupt disable flag
+defm CLI : ImpP<0x58, "CLI">;
+// clear overflow flag
+defm CLV : ImpP<0xB8, "CLV">;
+
+//===----------------------------------------------------------------------===//
+//===----------------------------------------------------------------------===//
+// End Instruction list
 //===----------------------------------------------------------------------===//
 //===----------------------------------------------------------------------===//
 
@@ -1757,7 +1723,6 @@ def BCLRs : FS<1,
 
 // Set/clear aliases for the carry (C) status flag (bit 0).
 def : InstAlias<"sec", (BSETs 0)>;
-def : InstAlias<"clc", (BCLRs 0)>;
 
 // Set/clear aliases for the zero (Z) status flag (bit 1).
 def : InstAlias<"sez", (BSETs 1)>;
@@ -1769,7 +1734,6 @@ def : InstAlias<"cln", (BCLRs 2)>;
 
 // Set/clear aliases for the overflow (V) status flag (bit 3).
 def : InstAlias<"sev", (BSETs 3)>;
-def : InstAlias<"clv", (BCLRs 3)>;
 
 // Set/clear aliases for the signed (S) status flag (bit 4).
 def : InstAlias<"ses", (BSETs 4)>;
@@ -1785,7 +1749,6 @@ def : InstAlias<"clt", (BCLRs 6)>;
 
 // Set/clear aliases for the interrupt (I) status flag (bit 7).
 def : InstAlias<"sei", (BSETs 7)>;
-def : InstAlias<"cli", (BCLRs 7)>;
 
 //===----------------------------------------------------------------------===//
 // Special/Control instructions
