@@ -15,20 +15,12 @@
 
 def RetCC_SNES : CallingConv
 <[
-  // i8 is returned in R24.
-  CCIfType<[i8], CCAssignToReg<[A]>>,
+  // i8 is returned in AL.
+  CCIfType<[i8], CCAssignToReg<[AL]>>,
 
   // i16 are returned in R25:R24, R23:R22, R21:R20 and R19:R18.
   CCIfType<[i16], CCAssignToReg<[A]>>
 ]>;
-
-// TODO: check the code below
-// Special return value calling convention for runtime functions.
-//def RetCC_SNES_BUILTIN : CallingConv
-//<[
-//  CCIfType<[i8], CCAssignToReg<[R24,R25]>>,
-//  CCIfType<[i16], CCAssignToReg<[R23R22, R25R24]>>
-//]>;
 
 //===----------------------------------------------------------------------===//
 // SNES Argument Calling Conventions
@@ -42,15 +34,6 @@ def ArgCC_SNES_Vararg : CallingConv
   // i16 are always passed through the stack with an alignment of 1.
   CCAssignToStack<2, 1>
 ]>;
-
-// TODO: check the code below
-// Special argument calling convention for
-// division runtime functions.
-//def ArgCC_SNES_BUILTIN_DIV : CallingConv
-//<[
-//  CCIfType<[i8], CCAssignToReg<[R24,R22]>>,
-//  CCIfType<[i16], CCAssignToReg<[R25R24, R23R22]>>
-//]>;
 
 //===----------------------------------------------------------------------===//
 // Callee-saved register lists.

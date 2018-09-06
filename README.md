@@ -18,9 +18,11 @@ Run:
   - `clang your_filename.c -S -emit-llvm -o your_filename.ll` _// see Obs. 1 and 2_
   - `./bin/llc -march=snes <your_filename>.(ll|bc)`
 
-Obs.1.: You may test it with any language that compiles to llvm, or you might write it yourself by hand, as long as the file has LLVM extensions `.ll` or `.bc`.
+###### Obs.1
+You may test it with any language that compiles to llvm, or you might write it yourself by hand, as long as the file has LLVM extensions `.ll` or `.bc`.
 
-Obs.2.: SNES (65c816) has a 16-bit architecture and this project up-to-date does not support 32 or 64 bit. A good example for a file test would be:
+###### Obs.2
+SNES (65c816) has a 16-bit architecture and this project up-to-date does not support 32 or 64 bit. A good example for a file test would be:
 
 ```C
 // sum_file.c
@@ -29,4 +31,5 @@ short sum(short a, short b) {
 }
 ```
 
-Obs.2.: The files for this project can be found inside the folder `./lib/Target/SNES/`. We are forked the whole LLVM because we have plans of using Docker container in the future for such tasks.
+###### Obs.3
+The files for this project can be found inside the folder `./lib/Target/SNES/`. We have forked the whole LLVM because we have plans of using Docker containers in the future for such tasks.

@@ -54,17 +54,17 @@
 - [x] SNESRegisterInfo.cpp
 - [ ] SNESMCInstLower.h
 - [ ] SNESMCInstLower.cpp
-- [ ] SNESCallingConv.td
-- [ ] SNESAsmPrinter.cpp
+- [x] SNESMachineFunctionInfo.h
+- [ ] SNESISelLowering.h
+- [ ] SNESISelLowering.cpp
+- [ ] SNESISelDAGToDAG.cpp
 - [ ] SNESInstrumentFunctions.cpp
 - [ ] SNESInstrInfo.td
 - [ ] SNESInstrInfo.h
 - [ ] SNESInstrInfo.cpp
+- [x] SNESCallingConv.td
+- [ ] SNESAsmPrinter.cpp
 - [ ] SNESInstrFormats.td
-- [ ] SNESISelLowering.h
-- [ ] SNESISelLowering.cpp
-- [ ] SNESISelDAGToDAG.cpp
 - [ ] SNESFrameLowering.h
 - [ ] SNESFrameLowering.cpp
-- [ ] SNESMachineFunctionInfo.h
 - [ ] SNESExpandPseudoInsts.cpp
