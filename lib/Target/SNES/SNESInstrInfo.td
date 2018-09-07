@@ -264,7 +264,7 @@ def SNES_COND_PL : PatLeaf<(i16 7)>;
 //===----------------------------------------------------------------------===//
 //===----------------------------------------------------------------------===//
 //===----------------------------------------------------------------------===//
-// Implied that change P (status) register <|opcode|>
+// Implied instructions <|opcode|>
 //===----------------------------------------------------------------------===//
 multiclass Imp <bits<8> opcode, string asm> {
   def "" : SNESImplied<opcode,
@@ -374,6 +374,25 @@ let Uses = [X, Y] in {
   defm TYX : ImpP<0xBB, "TYX">;
   // transfer x to y
   defm TXY : ImpP<0x9B, "TXY">;
+}
+
+//===----------------------------------------------------------------------===//
+// Immediate 8 bit <|opcode|imm8|>
+//===----------------------------------------------------------------------===//
+let Defs = [P] in {
+  // set processor status bits
+  def SEP : SNESImm8<0xE2,
+                     (outs),
+                     (ins i8imm:$k),
+                     "SEP\t#$k",
+                     []>;
+
+  // reset processor status bits
+  def REP : SNESImm8<0xC2,
+                     (outs),
+                     (ins i8imm:$k),
+                     "REP\t#$k",
+                     []>;
 }
 
 //===----------------------------------------------------------------------===//

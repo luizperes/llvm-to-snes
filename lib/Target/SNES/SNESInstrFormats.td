@@ -88,6 +88,19 @@ class SNESImplied<bits<8> opcode, dag outs, dag ins, string asmstr, list<dag> pa
 }
 
 //===----------------------------------------------------------------------===//
+// Immediate 8 bits: <|opcode|imm8|>
+// rd = source = 8 bits
+//===----------------------------------------------------------------------===//
+class SNESImm8<bits<8> opcode, dag outs, dag ins, string asmstr,
+  list<dag> pattern> : SNESInst16<outs, ins, asmstr, pattern>
+{
+  bits<8> k;
+
+  let Inst{15-8} = opcode;
+  let Inst{7-0}  = k;
+}
+
+//===----------------------------------------------------------------------===//
 // Register / register instruction: <|opcode|ffrd|dddd|rrrr|>
 // opcode = 4 bits.
 // f = secondary opcode = 2 bits
