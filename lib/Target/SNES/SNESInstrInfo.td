@@ -266,6 +266,14 @@ def SNES_COND_PL : PatLeaf<(i16 7)>;
 //===----------------------------------------------------------------------===//
 // Implied that change P (status) register <|opcode|>
 //===----------------------------------------------------------------------===//
+multiclass Imp <bits<8> opcode, string asm> {
+  def "" : SNESImplied<opcode,
+                        (outs),
+                        (ins),
+                        asm,
+                        []>;
+}
+
 multiclass ImpP <bits<8> opcode, string asm> {
   let Defs = [P] in {
     def "" : SNESImplied<opcode,
@@ -276,14 +284,54 @@ multiclass ImpP <bits<8> opcode, string asm> {
   }
 }
 
-// clear carry
+// no op
+defm NOP : Imp<0xEA, "NOP">;
+// stop processor
+defm STP : Imp<0xDB, "STP">;
+// wait for interrupt
+defm WAI : Imp<0xCB, "WAI">;
+
+// clear carry flag
 defm CLC : ImpP<0x18, "CLC">;
+// set carry flag
+defm SEC : ImpP<0x28, "SEC">;
 // clear decimal mode flag
 defm CLD : ImpP<0xD8, "CLD">;
+// set decimal mode flag
+defm SED : ImpP<0xF8, "SED">;
 // clear interrupt disable flag
 defm CLI : ImpP<0x58, "CLI">;
+// set interrupt disable flag
+defm SEI : ImpP<0x78, "SEI">;
 // clear overflow flag
 defm CLV : ImpP<0xB8, "CLV">;
+// exchange carry and emulation flags
+defm XCE : ImpP<0xFB, "XCE">;
+
+let Uses = [AL, AH], Defs = [A, P] in {
+  defm XBA : Imp<0xEB, "XBA">;
+}
+
+let Uses = [A] in {
+  // decrement A
+  defm DEA : ImpP<0x3A, "DEA">;
+  // increment A
+  defm INA : ImpP<0x1A, "INA">;
+}
+
+let Uses = [X] in {
+  // decrement X
+  defm DEX : ImpP<0xCA, "DEX">;
+  // increment X
+  defm INX : ImpP<0xE8, "INX">;
+}
+
+let Uses = [Y] in {
+  // decrement Y
+  defm DEY : ImpP<0xC8, "DEY">;
+  // increment Y
+  defm INY : ImpP<0xE8, "INY">;
+}
 
 //===----------------------------------------------------------------------===//
 //===----------------------------------------------------------------------===//
@@ -1721,9 +1769,6 @@ def BCLRs : FS<1,
                "bclr\t$s",
                []>;
 
-// Set/clear aliases for the carry (C) status flag (bit 0).
-def : InstAlias<"sec", (BSETs 0)>;
-
 // Set/clear aliases for the zero (Z) status flag (bit 1).
 def : InstAlias<"sez", (BSETs 1)>;
 def : InstAlias<"clz", (BCLRs 1)>;
@@ -1747,9 +1792,6 @@ def : InstAlias<"clh", (BCLRs 5)>;
 def : InstAlias<"set", (BSETs 6)>;
 def : InstAlias<"clt", (BCLRs 6)>;
 
-// Set/clear aliases for the interrupt (I) status flag (bit 7).
-def : InstAlias<"sei", (BSETs 7)>;
-
 //===----------------------------------------------------------------------===//
 // Special/Control instructions
 //===----------------------------------------------------------------------===//
@@ -1764,16 +1806,6 @@ def BREAK : F16<0b1001010110011000,
                 "break",
                 []>,
             Requires<[/*TODO: check it: HasBREAK */]>;
-
-// NOP
-// No-operation instruction
-// ---------
-// <|0000|0000|0000|0000>
-def NOP : F16<0b0000000000000000,
-              (outs),
-              (ins),
-              "nop",
-              []>;
 
 // SLEEP
 // Sleep instruction
