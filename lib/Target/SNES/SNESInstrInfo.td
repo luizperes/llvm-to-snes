@@ -309,6 +309,7 @@ defm CLV : ImpP<0xB8, "CLV">;
 defm XCE : ImpP<0xFB, "XCE">;
 
 let Uses = [AL, AH], Defs = [A, P] in {
+  // exchange A (AL) and B (AH) register values
   defm XBA : Imp<0xEB, "XBA">;
 }
 
@@ -331,6 +332,48 @@ let Uses = [Y] in {
   defm DEY : ImpP<0xC8, "DEY">;
   // increment Y
   defm INY : ImpP<0xE8, "INY">;
+}
+
+let Uses = [A, X] in {
+  // transfer A to X
+  defm TAX : ImpP<0xAA, "TAX">;
+  // transfer X to A
+  defm TXA : ImpP<0x8A, "TXA">;
+}
+
+let Uses = [A, Y] in {
+  // transfer A to Y
+  defm TAY : ImpP<0xA8, "TAY">;
+  // transfer Y to A
+  defm TYA : ImpP<0x98, "TYA">;
+}
+
+let Uses = [A, DP] in {
+  // transfer A to DP (direct page)
+  defm TCD : ImpP<0x5B, "TCD">;
+  // transfer DP (direct page) to A
+  defm TDC : ImpP<0x7B, "TDC">;
+}
+
+let Uses = [A, SP] in {
+  // transfer A to SP (stack pointer)
+  defm TCS : Imp<0x1B, "TCS">;
+  // transfer SP (stack pointer) to A
+  defm TSC : ImpP<0x3B, "TSC">;
+}
+
+let Uses = [X, SP] in {
+  // transfer X to SP (stack pointer)
+  defm TXS : Imp<0x9A, "TXS">;
+  // transfer SP (stack pointer) to X
+  defm TSX : ImpP<0xBA, "TSX">;
+}
+
+let Uses = [X, Y] in {
+  // transfer y to x
+  defm TYX : ImpP<0xBB, "TYX">;
+  // transfer x to y
+  defm TXY : ImpP<0x9B, "TXY">;
 }
 
 //===----------------------------------------------------------------------===//
