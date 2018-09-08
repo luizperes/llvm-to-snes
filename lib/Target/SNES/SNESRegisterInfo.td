@@ -91,6 +91,9 @@ def MainRegs : RegisterClass<"SNES", [i16], 8, (add A, X, Y)>;
 // Accumulator register class.
 def AccRegs : RegisterClass<"SNES", [i16], 8, (add A)>;
 
+// Accumulator register class.
+def Acc8Regs : RegisterClass<"SNES", [i8], 8, (add AL)>;
+
 // TODO: Check if index regs need to be in separated classes
 // Indexes register class.
 def IndexRegs : RegisterClass<"SNES", [i16], 8, (add X, Y)>;

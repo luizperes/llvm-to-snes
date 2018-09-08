@@ -101,6 +101,19 @@ class SNESImm8<bits<8> opcode, dag outs, dag ins, string asmstr,
 }
 
 //===----------------------------------------------------------------------===//
+// Immediate 16 bits: <|opcode|imm16|>
+// rd = source = 16 bits
+//===----------------------------------------------------------------------===//
+class SNESImm16<bits<8> opcode, dag outs, dag ins, string asmstr,
+  list<dag> pattern> : SNESInst24<outs, ins, asmstr, pattern>
+{
+  bits<16> k;
+
+  let Inst{23-16} = opcode;
+  let Inst{15-0}  = k;
+}
+
+//===----------------------------------------------------------------------===//
 // Register / register instruction: <|opcode|ffrd|dddd|rrrr|>
 // opcode = 4 bits.
 // f = secondary opcode = 2 bits

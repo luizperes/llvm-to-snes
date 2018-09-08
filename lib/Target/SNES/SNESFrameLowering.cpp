@@ -397,12 +397,13 @@ MachineBasicBlock::iterator SNESFrameLowering::eliminateCallFramePseudoInstr(
 
       // Select the best opcode to adjust SP based on the offset size.
       unsigned addOpcode;
-      if (isUInt<6>(Amount)) {
-        addOpcode = SNES::ADIWRdK;
-      } else {
+      // TODO: check if we need to use the line below
+      // if (isUInt<6>(Amount)) {
+      //   addOpcode = SNES::ADIWRdK;
+      // } else {
         addOpcode = SNES::SUBIWRdK;
         Amount = -Amount;
-      }
+      // }
 
       // Build the instruction sequence.
       BuildMI(MBB, MI, DL, TII.get(SNES::SPREAD), SNES::A).addReg(SNES::SP);

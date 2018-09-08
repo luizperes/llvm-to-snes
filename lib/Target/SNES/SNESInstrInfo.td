@@ -360,6 +360,8 @@ let Uses = [X, Y] in {
 //===----------------------------------------------------------------------===//
 // Implied Increment and Decrement -> <|opcode|>
 //===----------------------------------------------------------------------===//
+// TODO: 1. check when we will need to dec and inc X and Y
+// TODO: 2. dec and inc for 8 bits
 let Constraints = "$src = $rd",
 Defs = [P] in {
   // decrement A
@@ -379,7 +381,6 @@ Defs = [P] in {
                          (implicit P)]>;
 }
 
-// TODO: check when we will need to decrement X and Y
 let Uses = [X] in {
   // decrement X
   defm DEX : ImpP<0xCA, "DEX">;
@@ -411,6 +412,29 @@ let Defs = [P] in {
                      (ins i8imm:$k),
                      "REP\t#$k",
                      []>;
+}
+
+let Constraints = "$src = $rd",
+Defs = [P] in {
+  def ADCimm8 : SNESImm8<0x69,
+                         (outs Acc8Regs:$rd),
+                         (ins Acc8Regs:$src, i8imm:$k),
+                         "ADC\t#$k",
+                         [(set i8:$rd, (add i8:$src, imm:$k)),
+                          (implicit P)]>;
+}
+
+//===----------------------------------------------------------------------===//
+// Immediate 16 bit <|opcode|imm16|>
+//===----------------------------------------------------------------------===//
+let Constraints = "$src = $rd",
+Defs = [P] in {
+  def ADCimm16 : SNESImm16<0x69,
+                           (outs AccRegs:$rd),
+                           (ins AccRegs:$src, i16imm:$k),
+                           "ADC\t#$k",
+                           [(set i16:$rd, (add i16:$src, imm:$k)),
+                            (implicit P)]>;
 }
 
 //===----------------------------------------------------------------------===//
@@ -496,16 +520,6 @@ Defs = [P] in
                         "adcw\t$rd, $rr",
                         [(set i16:$rd, (adde i16:$src, i16:$rr)),
                          (implicit P)]>;
-
-  // AIDW Rd, k
-  // Adds an immediate 6-bit value K to Rd, placing the result in Rd.
-  def ADIWRdK : FWRdK<0b0,
-                      (outs MainRegs:$rd),
-                      (ins MainRegs:$src, imm_arith6:$k),
-                      "adiw\t$rd, $k",
-                      [(set i16:$rd, (add i16:$src, uimm6:$k)),
-                       (implicit P)]>,
-                Requires<[/*TODO: check it: HasADDSUBIW*/]>;
 }
 
 //===----------------------------------------------------------------------===//
