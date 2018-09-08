@@ -263,9 +263,6 @@ def SNES_COND_PL : PatLeaf<(i16 7)>;
 // SNES Instruction list
 //===----------------------------------------------------------------------===//
 //===----------------------------------------------------------------------===//
-//===----------------------------------------------------------------------===//
-// Implied instructions <|opcode|>
-//===----------------------------------------------------------------------===//
 multiclass Imp <bits<8> opcode, string asm> {
   def "" : SNESImplied<opcode,
                         (outs),
@@ -283,7 +280,9 @@ multiclass ImpP <bits<8> opcode, string asm> {
                          []>;
   }
 }
-
+//===----------------------------------------------------------------------===//
+// Implied instructions -> <|opcode|>
+//===----------------------------------------------------------------------===//
 // no op
 defm NOP : Imp<0xEA, "NOP">;
 // stop processor
@@ -308,30 +307,12 @@ defm CLV : ImpP<0xB8, "CLV">;
 // exchange carry and emulation flags
 defm XCE : ImpP<0xFB, "XCE">;
 
+//===----------------------------------------------------------------------===//
+// Implied Exchange instruction -> <|opcode|>
+//===----------------------------------------------------------------------===//
 let Uses = [AL, AH], Defs = [A, P] in {
   // exchange A (AL) and B (AH) register values
   defm XBA : Imp<0xEB, "XBA">;
-}
-
-let Uses = [A] in {
-  // decrement A
-  defm DEA : ImpP<0x3A, "DEA">;
-  // increment A
-  defm INA : ImpP<0x1A, "INA">;
-}
-
-let Uses = [X] in {
-  // decrement X
-  defm DEX : ImpP<0xCA, "DEX">;
-  // increment X
-  defm INX : ImpP<0xE8, "INX">;
-}
-
-let Uses = [Y] in {
-  // decrement Y
-  defm DEY : ImpP<0xC8, "DEY">;
-  // increment Y
-  defm INY : ImpP<0xE8, "INY">;
 }
 
 let Uses = [A, X] in {
@@ -374,6 +355,43 @@ let Uses = [X, Y] in {
   defm TYX : ImpP<0xBB, "TYX">;
   // transfer x to y
   defm TXY : ImpP<0x9B, "TXY">;
+}
+
+//===----------------------------------------------------------------------===//
+// Implied Increment and Decrement -> <|opcode|>
+//===----------------------------------------------------------------------===//
+let Constraints = "$src = $rd",
+Defs = [P] in {
+  // decrement A
+  def DEA : SNESImplied<0x3A,
+                        (outs AccRegs:$rd),
+                        (ins AccRegs:$src),
+                        "DEA",
+                        [(set i16:$rd, (add i16:$src, -1)),
+                         (implicit P)]>;
+
+  // increment A
+  def INA : SNESImplied<0x1A,
+                        (outs AccRegs:$rd),
+                        (ins AccRegs:$src),
+                        "INA",
+                        [(set i16:$rd, (add i16:$src, 1)),
+                         (implicit P)]>;
+}
+
+// TODO: check when we will need to decrement X and Y
+let Uses = [X] in {
+  // decrement X
+  defm DEX : ImpP<0xCA, "DEX">;
+  // increment X
+  defm INX : ImpP<0xE8, "INX">;
+}
+
+let Uses = [Y] in {
+  // decrement Y
+  defm DEY : ImpP<0xC8, "DEY">;
+  // increment Y
+  defm INY : ImpP<0xE8, "INY">;
 }
 
 //===----------------------------------------------------------------------===//
@@ -582,27 +600,6 @@ Defs = [P] in
                           [(set i16:$rd, (sube i16:$src, imm:$rr)),
                            (implicit P)]>;
   }
-}
-
-//===----------------------------------------------------------------------===//
-// Increment and Decrement
-//===----------------------------------------------------------------------===//
-let Constraints = "$src = $rd",
-Defs = [P] in
-{
-  def INCRd : FRd<0b1001,
-                  0b0100011,
-                  (outs MainRegs:$rd),
-                  (ins MainRegs:$src),
-                  "inc\t$rd",
-                  [(set i16:$rd, (add i16:$src, 1)), (implicit P)]>;
-
-  def DECRd : FRd<0b1001,
-                  0b0101010,
-                  (outs MainRegs:$rd),
-                  (ins MainRegs:$src),
-                  "dec\t$rd",
-                  [(set i16:$rd, (add i16:$src, -1)), (implicit P)]>;
 }
 
 //===----------------------------------------------------------------------===//
