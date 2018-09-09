@@ -40,3 +40,5 @@
 # bin folder
 build
 build-snes
+test/Examples/SNES/*.ll
+test/Examples/SNES/*.s
