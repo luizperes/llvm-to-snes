@@ -268,7 +268,7 @@ bool SNESFrameLowering::spillCalleeSavedRegisters(
     }
 
     // Do not kill the register when it is an input argument.
-    BuildMI(MBB, MI, DL, TII.get(SNES::PUSHRr))
+    BuildMI(MBB, MI, DL, TII.get(SNES::PHAstk))
         .addReg(Reg, getKillRegState(IsNotLiveIn))
         .setMIFlag(MachineInstr::FrameSetup);
     ++CalleeFrameSize;
@@ -335,17 +335,21 @@ static void fixStackStores(MachineBasicBlock &MBB,
 
       // We can't use PUSHWRr here because when expanded the order of the new
       // instructions are reversed from what we need. Perform the expansion now.
-      if (Opcode == SNES::STDWSPQRr) {
-        BuildMI(MBB, I, MI.getDebugLoc(), TII.get(SNES::PUSHRr))
-            .addReg(TRI.getSubReg(SrcReg, SNES::sub_hi),
-                    getKillRegState(SrcIsKill));
-        BuildMI(MBB, I, MI.getDebugLoc(), TII.get(SNES::PUSHRr))
-            .addReg(TRI.getSubReg(SrcReg, SNES::sub_lo),
-                    getKillRegState(SrcIsKill));
-      } else {
-        BuildMI(MBB, I, MI.getDebugLoc(), TII.get(SNES::PUSHRr))
+      // TODO: check if we need to use code below
+      // if (Opcode == SNES::STDWSPQRr) {
+      //   BuildMI(MBB, I, MI.getDebugLoc(), TII.get(SNES::PUSHRr))
+      //       .addReg(TRI.getSubReg(SrcReg, SNES::sub_hi),
+      //               getKillRegState(SrcIsKill));
+      //   BuildMI(MBB, I, MI.getDebugLoc(), TII.get(SNES::PUSHRr))
+      //       .addReg(TRI.getSubReg(SrcReg, SNES::sub_lo),
+      //               getKillRegState(SrcIsKill));
+      // } else {
+      //   BuildMI(MBB, I, MI.getDebugLoc(), TII.get(SNES::PUSHRr))
+      //       .addReg(SrcReg, getKillRegState(SrcIsKill));
+      // }
+
+      BuildMI(MBB, I, MI.getDebugLoc(), TII.get(SNES::PHAstk))
             .addReg(SrcReg, getKillRegState(SrcIsKill));
-      }
 
       MI.eraseFromParent();
       I = NextMI;

@@ -601,7 +601,7 @@ bool SNESExpandPseudo::expand<SNES::LDWRdPtr>(Block &MBB, BlockIt MBBI) {
 
   // Push low byte onto stack if necessary.
   if (TmpReg)
-    buildMI(MBB, MBBI, SNES::PUSHRr).addReg(TmpReg);
+    buildMI(MBB, MBBI, SNES::PHAstk).addReg(TmpReg);
 
   // Load high byte.
   auto MIBHI = buildMI(MBB, MBBI, OpHi)
@@ -716,7 +716,7 @@ bool SNESExpandPseudo::expand<SNES::LDDWRdPtrQ>(Block &MBB, BlockIt MBBI) {
 
   // Push low byte onto stack if necessary.
   if (TmpReg)
-    buildMI(MBB, MBBI, SNES::PUSHRr).addReg(TmpReg);
+    buildMI(MBB, MBBI, SNES::PHAstk).addReg(TmpReg);
 
   // Load high byte.
   auto MIBHI = buildMI(MBB, MBBI, OpHi)
@@ -1153,22 +1153,23 @@ bool SNESExpandPseudo::expand<SNES::OUTWARr>(Block &MBB, BlockIt MBBI) {
 template <>
 bool SNESExpandPseudo::expand<SNES::PUSHWRr>(Block &MBB, BlockIt MBBI) {
   MachineInstr &MI = *MBBI;
-  unsigned OpLo, OpHi, SrcLoReg, SrcHiReg;
+  // TODO: check how to do it later
+  //unsigned OpLo, OpHi, SrcLoReg, SrcHiReg;
   unsigned SrcReg = MI.getOperand(0).getReg();
   bool SrcIsKill = MI.getOperand(0).isKill();
   unsigned Flags = MI.getFlags();
-  OpLo = SNES::PUSHRr;
-  OpHi = SNES::PUSHRr;
-  TRI->splitReg(SrcReg, SrcLoReg, SrcHiReg);
+  // OpLo = SNES::PUSHRr;
+  // OpHi = SNES::PUSHRr;
+  // TRI->splitReg(SrcReg, SrcLoReg, SrcHiReg);
 
-  // Low part
-  buildMI(MBB, MBBI, OpLo)
-    .addReg(SrcLoReg, getKillRegState(SrcIsKill))
-    .setMIFlags(Flags);
+  // // Low part
+  // buildMI(MBB, MBBI, OpLo)
+  //   .addReg(SrcLoReg, getKillRegState(SrcIsKill))
+  //   .setMIFlags(Flags);
 
-  // High part
-  buildMI(MBB, MBBI, OpHi)
-    .addReg(SrcHiReg, getKillRegState(SrcIsKill))
+  // // High part
+  buildMI(MBB, MBBI, SNES::PHAstk)
+    .addReg(SrcReg, getKillRegState(SrcIsKill))
     .setMIFlags(Flags);
 
   MI.eraseFromParent();

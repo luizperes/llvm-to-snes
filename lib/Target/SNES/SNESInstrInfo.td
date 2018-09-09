@@ -396,6 +396,23 @@ let Uses = [Y] in {
 }
 
 //===----------------------------------------------------------------------===//
+// Implied push and pop <|opcode|>
+//===----------------------------------------------------------------------===//
+let Defs = [SP],
+Uses = [SP],
+hasSideEffects = 0 in
+{
+  let mayStore = 1 in
+  {
+    def PHAstk : SNESImplied<0x48,
+                        (outs),
+                        (ins AccRegs:$src),
+                        "PHA",
+                        []>;
+  }
+}
+
+//===----------------------------------------------------------------------===//
 // Immediate 8 bit <|opcode|imm8|>
 //===----------------------------------------------------------------------===//
 let Defs = [P] in {
@@ -1766,14 +1783,6 @@ hasSideEffects = 0 in
   // Stack push operations.
   let mayStore = 1 in
   {
-    def PUSHRr : FRd<0b1001,
-                     0b0011111,
-                     (outs),
-                     (ins MainRegs:$reg),
-                     "push\t$reg",
-                     []>,
-                 Requires<[/*TODO: check it: HasSRAM */]>;
-
     def PUSHWRr : Pseudo<(outs),
                          (ins MainRegs:$reg),
                          "pushw\t$reg",
