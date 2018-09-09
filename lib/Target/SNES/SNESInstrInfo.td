@@ -423,11 +423,25 @@ Defs = [P] in {
                          [(set i8:$rd, (add i8:$src, imm:$k)),
                           (implicit P)]>;
 
+  def SBCimm8 : SNESImm8<0xE9,
+                         (outs Acc8Regs:$rd),
+                         (ins Acc8Regs:$src, i8imm:$k),
+                         "SBC\t#$k",
+                         [(set i8:$rd, (sub i8:$src, imm:$k)),
+                          (implicit P)]>;
+
   def ANDimm8 : SNESImm8<0x29,
                         (outs Acc8Regs:$rd),
                         (ins Acc8Regs:$src, i8imm:$k),
                         "AND\t#$k",
                         [(set i8:$rd, (and i8:$src, imm:$k)),
+                         (implicit P)]>;
+
+  def ORAimm8 : SNESImm8<0x09,
+                        (outs Acc8Regs:$rd),
+                        (ins Acc8Regs:$src, i8imm:$k),
+                        "ORA\t#$k",
+                        [(set i8:$rd, (or i8:$src, imm:$k)),
                          (implicit P)]>;
 
   def EORimm8 : SNESImm8<0x49,
@@ -505,11 +519,25 @@ Defs = [P] in {
                            [(set i16:$rd, (add i16:$src, imm:$k)),
                             (implicit P)]>;
 
+  def SBCimm16 : SNESImm16<0xE9,
+                           (outs AccRegs:$rd),
+                           (ins AccRegs:$src, i16imm:$k),
+                           "SBC\t#$k",
+                           [(set i16:$rd, (sub i16:$src, imm:$k)),
+                            (implicit P)]>;
+
   def ANDimm16 : SNESImm16<0x29,
                            (outs AccRegs:$rd),
                            (ins AccRegs:$src, i16imm:$k),
                            "AND\t#$k",
                            [(set i16:$rd, (and i16:$src, imm:$k)),
+                            (implicit P)]>;
+
+  def ORAimm16 : SNESImm16<0x09,
+                           (outs AccRegs:$rd),
+                           (ins AccRegs:$src, i16imm:$k),
+                           "ORA\t#$k",
+                           [(set i16:$rd, (or i16:$src, imm:$k)),
                             (implicit P)]>;
 
   def EORimm16 : SNESImm16<0x49,
@@ -706,13 +734,13 @@ Defs = [P] in
                         [(set i16:$rd, (sub i16:$src, imm:$rr)),
                          (implicit P)]>;
 
-  def SBIWRdK : FWRdK<0b1,
-                      (outs MainRegs:$rd),
-                      (ins MainRegs:$src, imm_arith6:$k),
-                      "sbiw\t$rd, $k",
-                      [(set i16:$rd, (sub i16:$src, uimm6:$k)),
-                       (implicit P)]>,
-                Requires<[/* TODO: check it: HasADDSUBIW */]>;
+  // def SBIWRdK : FWRdK<0b1,
+  //                     (outs MainRegs:$rd),
+  //                     (ins MainRegs:$src, imm_arith6:$k),
+  //                     "sbiw\t$rd, $k",
+  //                     [(set i16:$rd, (sub i16:$src, uimm6:$k)),
+  //                      (implicit P)]>,
+  //               Requires<[/* TODO: check it: HasADDSUBIW */]>;
 
   // Subtract with carry operations which must read the carry flag in P.
   let Uses = [P] in
@@ -893,13 +921,6 @@ Defs = [P] in
                         "andiw\t$rd, $k",
                         [(set i16:$rd, (and i16:$src, imm:$k)),
                          (implicit P)]>;
-
-  def ORIRdK : FRdK<0b0110,
-                    (outs MainRegs:$rd),
-                    (ins MainRegs:$src, imm_ldi16:$k),
-                    "ori\t$rd, $k",
-                    [(set i16:$rd, (or i16:$src, imm:$k)),
-                     (implicit P)]>;
 
   // ORIW Rd+1:Rd, K+1,K
   //
@@ -2208,7 +2229,9 @@ def : Pat<(subc i16:$src, imm:$src2),
 // These patterns convert add (x, -imm) to sub (x, imm) since we dont have
 // any add with imm instructions. Also take care of the adiw/sbiw instructions.
 def : Pat<(add i16:$src1, imm0_63_neg:$src2),
-          (SBIWRdK i16:$src1, (imm0_63_neg:$src2))>;
+          (SBCimm16 i16:$src1, (imm0_63_neg:$src2))>;
+def : Pat<(add i8:$src1, imm0_63_neg:$src2),
+          (SBCimm8 i8:$src1, (imm0_63_neg:$src2))>;
 def : Pat<(add i16:$src1, imm:$src2),
           (SUBIWRdK i16:$src1, (imm16_neg_XFORM imm:$src2))>;
 def : Pat<(addc i16:$src1, imm:$src2),

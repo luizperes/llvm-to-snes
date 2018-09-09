@@ -211,7 +211,7 @@ bool SNESExpandPseudo::
     return true;
 
   // ORI Rd, 0x0 is redundant.
-  if (Op == SNES::ORIRdK && ImmVal == 0x0)
+  if (Op == SNES::ORAimm16 && ImmVal == 0x0)
     return true;
 
   return false;
@@ -376,7 +376,7 @@ bool SNESExpandPseudo::expand<SNES::ORWRdRr>(Block &MBB, BlockIt MBBI) {
 
 template <>
 bool SNESExpandPseudo::expand<SNES::ORIWRdK>(Block &MBB, BlockIt MBBI) {
-  return expandLogicImm(SNES::ORIRdK, MBB, MBBI);
+  return expandLogicImm(SNES::ORAimm16, MBB, MBBI);
 }
 
 template <>
