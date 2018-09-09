@@ -429,6 +429,13 @@ Defs = [P] in {
                         "AND\t#$k",
                         [(set i8:$rd, (and i8:$src, imm:$k)),
                          (implicit P)]>;
+
+  def EORimm8 : SNESImm8<0x49,
+                         (outs Acc8Regs:$rd),
+                         (ins Acc8Regs:$src, i8imm:$k),
+                         "EOR\t#$k",
+                         [(set i8:$rd, (xor i8:$src, imm:$k)),
+                          (implicit P)]>;
 }
 
 let Defs = [P] in {
@@ -478,6 +485,13 @@ Defs = [P] in {
                            (ins AccRegs:$src, i16imm:$k),
                            "AND\t#$k",
                            [(set i16:$rd, (and i16:$src, imm:$k)),
+                            (implicit P)]>;
+
+  def EORimm16 : SNESImm16<0x49,
+                           (outs AccRegs:$rd),
+                           (ins AccRegs:$src, i16imm:$k),
+                           "EOR\t#$k",
+                           [(set i16:$rd, (xor i16:$src, imm:$k)),
                             (implicit P)]>;
 }
 
