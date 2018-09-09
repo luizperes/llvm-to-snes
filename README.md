@@ -1,6 +1,6 @@
 # LLVM IR to the SNES plataform
 
-> This project aims to transform LLVM IR into WLA DX (ASM 65c816) which would then assemble this output and generate a SNES ROM. Please read the links below to further information on SNES and LLVM plataforms.
+> This project aims to transform LLVM IR into WLA DX (ASM 65c816), assemble the output and generate a SNES ROM. Please read the links below to further information on SNES and LLVM plataforms.
 
 * [SNES 65816 Reference](https://wiki.superfamicom.org/65816-reference)
 * [LLVM Backend API](https://llvm.org/docs/WritingAnLLVMBackend.html)
@@ -34,7 +34,16 @@ short sum(short a, short b) {
 ```
 
 ###### Obs.3
-You may find C files for testing under `./test/Examples/SNES`.
+You may find C files for testing under [./test/Examples/SNES](./test/Examples/SNES)`.
 
 ###### Obs.4
-The files for this project can be found inside the folder `./lib/Target/SNES/`. We have forked the whole LLVM because we have plans of using Docker containers in the future for such tasks.
+The files for this project can be found inside the folder [./lib/Target/SNES/](./lib/Target/SNES/). We have forked the whole LLVM because we have plans of using Docker containers in the future for such tasks.
+
+# How to help
+We still have a lot of tasks before creating a first version of this project. All skill levels are welcome to accomplish tasks such as:
+  - Testing and [reporting issues](https://github.com/luizperes/llvm-to-snes/issues)
+  - Creating test files
+  - Working on project documentation
+  - Creating libraries for LLVM frontend languages (such as C and Rust)
+  - Developing the backend (Check [./lib/Target/SNES/TODO.md](./lib/Target/SNES/TODO.md))
+  - Many others
