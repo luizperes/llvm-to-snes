@@ -468,6 +468,31 @@ let Defs = [P] in {
                          /*(implicit P)*/]>;
 }
 
+let canFoldAsLoad = 1,
+isReMaterializable = 1,
+Defs = [P] in {
+  def LDAimm8 : SNESImm8<0xA9,
+                         (outs Acc8Regs:$rd),
+                         (ins i8imm:$k),
+                         "LDA\t#$k",
+                         [(set i8:$rd, (load imm:$k)),
+                          (implicit P)]>;
+
+  def LDXimm8 : SNESImm8<0xA2,
+                         (outs IndexX8Regs:$rd),
+                         (ins i8imm:$k),
+                         "LDX\t#$k",
+                         [/*TODO: how are we gonna use LDX?*/
+                          /*(implicit P)*/]>;
+
+  def LDYimm8 : SNESImm8<0xA0,
+                         (outs IndexY8Regs:$rd),
+                         (ins i8imm:$k),
+                         "LDY\t#$k",
+                         [/*how are we gonna use LDY?*/
+                          /*(implicit P)*/]>;
+}
+
 //===----------------------------------------------------------------------===//
 // Immediate 16 bit <|opcode|imm16|>
 //===----------------------------------------------------------------------===//
@@ -523,6 +548,31 @@ let Defs = [P] in {
                            "CPY\t#$k",
                            [/*TODO: how are we gonna use CPY?*/
                            /*(implicit P)*/]>;
+}
+
+let canFoldAsLoad = 1,
+isReMaterializable = 1,
+Defs = [P] in {
+  def LDAimm16 : SNESImm16<0xA9,
+                           (outs AccRegs:$rd),
+                           (ins i16imm:$k),
+                           "LDA\t#$k",
+                           [(set i16:$rd, (load imm:$k)),
+                            (implicit P)]>;
+
+  def LDXimm16 : SNESImm16<0xA2,
+                           (outs IndexXRegs:$rd),
+                           (ins i16imm:$k),
+                           "LDX\t#$k",
+                           [/*TODO: how are we gonna use LDX?*/
+                            /*(implicit P)*/]>;
+
+  def LDYimm16 : SNESImm16<0xA0,
+                           (outs IndexYRegs:$rd),
+                           (ins i16imm:$k),
+                           "LDY\t#$k",
+                           [/*how are we gonna use LDY?*/
+                            /*(implicit P)*/]>;
 }
 
 //===----------------------------------------------------------------------===//
