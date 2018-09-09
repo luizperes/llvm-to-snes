@@ -207,7 +207,7 @@ bool SNESExpandPseudo::
   isLogicImmOpRedundant(unsigned Op, unsigned ImmVal) const {
 
   // ANDI Rd, 0xff is redundant.
-  if (Op == SNES::ANDIRdK && ImmVal == 0xff)
+  if (Op == SNES::ANDimm16 && ImmVal == 0xff)
     return true;
 
   // ORI Rd, 0x0 is redundant.
@@ -366,7 +366,7 @@ bool SNESExpandPseudo::expand<SNES::ANDWRdRr>(Block &MBB, BlockIt MBBI) {
 
 template <>
 bool SNESExpandPseudo::expand<SNES::ANDIWRdK>(Block &MBB, BlockIt MBBI) {
-  return expandLogicImm(SNES::ANDIRdK, MBB, MBBI);
+  return expandLogicImm(SNES::ANDimm16, MBB, MBBI);
 }
 
 template <>

@@ -422,6 +422,43 @@ Defs = [P] in {
                          "ADC\t#$k",
                          [(set i8:$rd, (add i8:$src, imm:$k)),
                           (implicit P)]>;
+
+  def ANDimm8 : SNESImm8<0x29,
+                        (outs Acc8Regs:$rd),
+                        (ins Acc8Regs:$src, i8imm:$k),
+                        "AND\t#$k",
+                        [(set i8:$rd, (and i8:$src, imm:$k)),
+                         (implicit P)]>;
+}
+
+let Defs = [P] in {
+  def BITimm8 : SNESImm8<0x89,
+                        (outs),
+                        (ins Acc8Regs:$rd, i8imm:$k),
+                        "BIT\t#$k",
+                        [/*TODO: how are we gonna use BIT?*/
+                         /*(implicit P)*/]>;
+
+  def CMPimm8 : SNESImm8<0xC9,
+                        (outs),
+                        (ins Acc8Regs:$rd, i8imm:$k),
+                        "CMP\t#$k",
+                        [(SNEScmp i8:$rd, imm:$k),
+                         (implicit P)]>;
+
+  def CPXimm8 : SNESImm8<0xE0,
+                        (outs),
+                        (ins IndexX8Regs:$rd, i8imm:$k),
+                        "CPX\t#$k",
+                        [/*TODO: how are we gonna use CPX?*/
+                         /*(implicit P)*/]>;
+                        
+  def CPYimm8 : SNESImm8<0xC0,
+                        (outs),
+                        (ins IndexY8Regs:$rd, i8imm:$k),
+                        "CPY\t#$k",
+                        [/*TODO: how are we gonna use CPY?*/
+                         /*(implicit P)*/]>;
 }
 
 //===----------------------------------------------------------------------===//
@@ -435,6 +472,43 @@ Defs = [P] in {
                            "ADC\t#$k",
                            [(set i16:$rd, (add i16:$src, imm:$k)),
                             (implicit P)]>;
+
+  def ANDimm16 : SNESImm16<0x29,
+                           (outs AccRegs:$rd),
+                           (ins AccRegs:$src, i16imm:$k),
+                           "AND\t#$k",
+                           [(set i16:$rd, (and i16:$src, imm:$k)),
+                            (implicit P)]>;
+}
+
+let Defs = [P] in {
+  def BITimm16 : SNESImm16<0x89,
+                           (outs),
+                           (ins AccRegs:$rd, i16imm:$k),
+                           "BIT\t#$k",
+                           [/*TODO: how are we gonna use BIT?*/
+                            /*(implicit P)*/]>;
+
+  def CMPimm16 : SNESImm16<0xC9,
+                           (outs),
+                           (ins AccRegs:$rd, i16imm:$k),
+                           "CMP\t#$k",
+                           [(SNEScmp i16:$rd, imm:$k),
+                            (implicit P)]>;
+
+  def CPXimm16 : SNESImm16<0xE0,
+                           (outs),
+                           (ins IndexXRegs:$rd, i8imm:$k),
+                           "CPX\t#$k",
+                           [/*TODO: how are we gonna use CPX?*/
+                           /*(implicit P)*/]>;
+                        
+  def CPYimm16 : SNESImm16<0xC0,
+                           (outs),
+                           (ins IndexYRegs:$rd, i8imm:$k),
+                           "CPY\t#$k",
+                           [/*TODO: how are we gonna use CPY?*/
+                           /*(implicit P)*/]>;
 }
 
 //===----------------------------------------------------------------------===//
@@ -744,13 +818,6 @@ Defs = [P] in
                           [(set i16:$rd, (xor i16:$src, i16:$rr)),
                            (implicit P)]>;
   }
-
-  def ANDIRdK : FRdK<0b0111,
-                     (outs MainRegs:$rd),
-                     (ins MainRegs:$src, imm_ldi16:$k),
-                     "andi\t$rd, $k",
-                     [(set i16:$rd, (and i16:$src, imm:$k)),
-                      (implicit P)]>;
 
   // ANDI Rd+1:Rd, K+1:K
   //
