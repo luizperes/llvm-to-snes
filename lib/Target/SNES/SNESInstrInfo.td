@@ -68,6 +68,8 @@ def SNESrolLoop : SDNode<"SNESISD::ROLLOOP", SDTIntShiftOp>;
 def SNESrorLoop : SDNode<"SNESISD::RORLOOP", SDTIntShiftOp>;
 def SNESasrLoop : SDNode<"SNESISD::ASRLOOP", SDTIntShiftOp>;
 
+dsdsds
+
 //===----------------------------------------------------------------------===//
 // SNES Operands, Complex Patterns and Transformations Definitions.
 //===----------------------------------------------------------------------===//
@@ -2068,19 +2070,19 @@ def WDR : F16<0b1001010110101000,
 //:TODO: Optimize this for wider types AND optimize the following code
 //       compile int foo(char a, char b, char c, char d) {return d+b;}
 //       looks like a missed sext_inreg opportunity.
-// def SEXT : ExtensionPseudo<
-//   (outs EFLAGSRegs:$dst),
-//   (ins MainRegs:$src),
-//   "sext\t$dst, $src",
-//   [(set i16:$dst, (sext i8:$src)), (implicit P)]
-// >;
+def SEXT : ExtensionPseudo<
+  (outs MainRegs:$dst),
+  (ins MainLoRegs:$src),
+  "sext\t$dst, $src",
+  [(set i16:$dst, (sext i8:$src)), (implicit P)]
+>;
 
-// def ZEXT : ExtensionPseudo<
-//   (outs EFLAGSRegs:$dst),
-//   (ins EFLAGSRegs:$src),
-//   "zext\t$dst, $src",
-//   [(set i8:$dst, (zext i8:$src)), (implicit P)]
-// >;
+def ZEXT : ExtensionPseudo<
+  (outs MainRegs:$dst),
+  (ins MainLoRegs:$src),
+  "zext\t$dst, $src",
+  [(set i16:$dst, (zext i8:$src)), (implicit P)]
+>;
 
 // This pseudo gets expanded into a movw+adiw thus it clobbers P.
 let Defs = [P],
@@ -2262,16 +2264,16 @@ def : Pat<(SNEScall (i16 texternalsym:$dst)),
           (CALLk texternalsym:$dst)>;
 
 // `anyext`
-// def : Pat<(i16 (anyext i16:$src)),
-//           (INSERT_SUBREG (i16 (IMPLICIT_DEF)), i16:$src, sub_lo)>;
+def : Pat<(i16 (anyext i8:$src)),
+          (INSERT_SUBREG (i16 (IMPLICIT_DEF)), i8:$src, sub_lo)>;
 
 // `trunc`
-// def : Pat<(i16 (trunc i16:$src)),
-//           (EXTRACT_SUBREG i16:$src, sub_lo)>;
+def : Pat<(i8 (trunc i16:$src)),
+          (EXTRACT_SUBREG i16:$src, sub_lo)>;
 
 // sext_inreg
-// def : Pat<(sext_inreg i16:$src, i8),
-//           (SEXT (i8 (EXTRACT_SUBREG i16:$src, sub_lo)))>;
+def : Pat<(sext_inreg i16:$src, i8),
+          (SEXT (i8 (EXTRACT_SUBREG i16:$src, sub_lo)))>;
 
 // GlobalAddress
 def : Pat<(i16 (SNESWrapper tglobaladdr:$dst)),

@@ -151,6 +151,8 @@ void SNESInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
     llvm_unreachable("Cannot store this register into a stack slot!");
   }
 
+  fddfd
+
   BuildMI(MBB, MI, DL, get(Opcode))
       .addFrameIndex(FrameIndex)
       .addImm(0)
