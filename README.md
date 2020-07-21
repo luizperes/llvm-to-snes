@@ -12,8 +12,8 @@ The wiki's homepage for general information on SNES architecture (65c816)
 # How to test it
 Install it locally:
   - `cd </path/to/llvm-to-snes/>`
-  - `makedir build-snes && cd build-snes`
-  - `cmake -DLLVM_TARGETS_TO_BUILD=X86 . --build . -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=SNES`
+  - `mkdir build-snes && cd build-snes`
+  - `cmake -DLLVM_TARGETS_TO_BUILD=X86 .. --build .. -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=SNES`
   - `make install` _// it might take a while_
 
 Run: _// please read observations below_
